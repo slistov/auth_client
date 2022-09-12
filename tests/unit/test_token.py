@@ -1,4 +1,4 @@
-from ...src.auth_client.domain import model
+from src.auth_client.domain import model
 
 
 class FakeAuthService():
