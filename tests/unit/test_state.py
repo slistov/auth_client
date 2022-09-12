@@ -1,8 +1,8 @@
-from ...src.auth_client.domain import model
+from src.auth_client.domain import model
 from pytest import Session
 
 class FakeCodeGenerator():
-    def get_state_code():
+    def get_state_code(self):
         return "test_state"
 
 def test_state_is_saved_in_db(session):

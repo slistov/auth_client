@@ -1,19 +1,31 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String
+from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Boolean
 from sqlalchemy.orm import mapper, relationship
 
-from ..domain import model
+from src.auth_client.domain import model
 
 metadata = MetaData()
 
-tokens = Table(
-    'tokens', metadata,
+
+states = Table(
+    'states', metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
-    Column('access_token', String(255)),
+    Column('code', String),
+    Column('created', DateTime),
+    Column('is_active', Boolean),
 )
 
 
+# tokens = Table(
+#     'tokens', metadata,
+#     Column('id', Integer, primary_key=True, autoincrement=True),
+#     Column('access_token', String(255)),
+# )
+
+
 def start_mappers():
-    tokens_mapper = mapper(model.TokenService, tokens)
+    states_mapper = mapper(model.State, states)
+    # tokens_mapper = mapper(model.TokenService, tokens)
+    
 
 
 # class User(Base):

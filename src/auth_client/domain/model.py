@@ -1,16 +1,20 @@
-class State():
-    code: str = None
+import datetime
 
-    def get_code(self):
-        if not self.code:
+
+class State:
+    def __init__(self, code: str = None) -> None:
+        if not code:
             self.code = "some_code"
-        return self.code
+            self.created = datetime.datetime.utcnow()
+            self.is_active = True
+        else:
+            self.code = code
 
 
-class Token():
-    access_token: str = None
+class Token:
     def __init__(self, auth_service) -> None:
         self.auth_service = auth_service
+        self.access_token = None
 
     def get_access_token(self):
         if not self.access_token:
