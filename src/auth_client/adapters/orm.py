@@ -1,5 +1,5 @@
 from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Boolean
-from sqlalchemy.orm import mapper, relationship
+from sqlalchemy.orm import mapper, relationship 
 
 from src.auth_client.domain import model
 
@@ -13,6 +13,8 @@ states = Table(
     Column('created', DateTime),
     Column('is_active', Boolean),
 )
+
+
 
 
 # tokens = Table(

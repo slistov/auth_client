@@ -9,7 +9,7 @@ class Event:
 
 
 @dataclass
-class StateRequired(Event):
+class StateExpired(Event):
     pass
 
 

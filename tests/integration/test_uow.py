@@ -20,5 +20,4 @@ def test_uow_can_save_a_state(session_factory):
         code = state.code
         uow.commit()
 
-    #batchref = get_allocated_batch_ref(session, "o1", "HIPSTER-WORKBENCH")
     assert code == "test_state_code"
