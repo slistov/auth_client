@@ -4,11 +4,18 @@ import datetime
 class State:
     def __init__(self, code: str = None) -> None:
         if not code:
-            self.code = "some_code"
+            self.code = self._generate_code()
             self.created = datetime.datetime.utcnow()
             self.is_active = True
         else:
             self.code = code
+    
+    def _generate_code():
+        return "some_code"
+    
+    def is_valid():
+        pass
+
 
 
 class Token:
