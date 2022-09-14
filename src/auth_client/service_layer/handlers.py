@@ -1,6 +1,7 @@
-from auth_client.domain import model, events, commands
-import unit_of_work
- 
+from typing import TYPE_CHECKING
+from src.auth_client.domain import model, events, commands
+
+from . import unit_of_work 
 
 def create_state(
     cmd: commands.CreateState,
