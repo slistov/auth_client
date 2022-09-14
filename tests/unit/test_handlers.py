@@ -2,9 +2,9 @@
 from datetime import date
 from unittest import mock
 import pytest
-from auth_client.adapters import repository
-from auth_client.domain import commands, events
-from auth_client.service_layer import handlers, messagebus, unit_of_work
+from src.auth_client.adapters import repository
+from src.auth_client.domain import commands, events
+from src.auth_client.service_layer import handlers, messagebus, unit_of_work
 
 
 class FakeRepository(repository.AbstractRepository):

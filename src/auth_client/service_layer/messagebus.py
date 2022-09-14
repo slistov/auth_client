@@ -2,7 +2,7 @@
 from __future__ import annotations
 import logging
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
-from auth_client.domain import commands, events
+from src.auth_client.domain import commands, events
 from . import handlers
 
 if TYPE_CHECKING:
