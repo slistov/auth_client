@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "src.entrypoints.fastapi_app:app"
+                "src.auth_client.entrypoints.fastapi_app:app"
             ],
             "jinja": true,
             "justMyCode": false

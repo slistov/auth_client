@@ -42,7 +42,7 @@ class TestState:
         uow = FakeUnitOfWork()
         messagebus.handle(commands.CreateBatch("b1", "GARISH-RUG", 100, None), uow)
         messagebus.handle(commands.CreateBatch("b2", "GARISH-RUG", 99, None), uow)
-        assert "b2" in [b.reference for b in uow.products.get("GARISH-RUG").batches]
+        assert "b2" in [b.reference for b in uow.states.get("GARISH-RUG").batches]
 
 
 class TestAllocate:
@@ -55,7 +55,7 @@ class TestAllocate:
             commands.Allocate("o1", "COMPLICATED-LAMP", 10), uow
         )
         assert results.pop(0) == "batch1"
-        [batch] = uow.products.get("COMPLICATED-LAMP").batches
+        [batch] = uow.states.get("COMPLICATED-LAMP").batches
         assert batch.available_quantity == 90
 
     def test_errors_for_invalid_sku(self):
@@ -92,7 +92,7 @@ class TestChangeBatchQuantity:
         messagebus.handle(
             commands.CreateBatch("batch1", "ADORABLE-SETTEE", 100, None), uow
         )
-        [batch] = uow.products.get(sku="ADORABLE-SETTEE").batches
+        [batch] = uow.states.get(sku="ADORABLE-SETTEE").batches
         assert batch.available_quantity == 100
 
         messagebus.handle(commands.ChangeBatchQuantity("batch1", 50), uow)
@@ -109,7 +109,7 @@ class TestChangeBatchQuantity:
         ]
         for msg in history:
             messagebus.handle(msg, uow)
-        [batch1, batch2] = uow.products.get(sku="INDIFFERENT-TABLE").batches
+        [batch1, batch2] = uow.states.get(sku="INDIFFERENT-TABLE").batches
         assert batch1.available_quantity == 10
         assert batch2.available_quantity == 50
 
