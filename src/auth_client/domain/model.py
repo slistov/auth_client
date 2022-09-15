@@ -7,14 +7,17 @@ class State:
             self.code = self._generate_code()
             self.created = datetime.datetime.utcnow()
             self.is_active = True
+            self.events = []  # type: List[events.Event]            
         else:
             self.code = code
     
-    def _generate_code():
+    def _generate_code(self):
         return "some_code"
     
-    def is_valid():
+    def is_valid(self):
         pass
+
+
 
 
 
