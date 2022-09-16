@@ -22,6 +22,11 @@ class AbstractUnitOfWork(abc.ABC):
     def commit(self):
         self._commit()
 
+    def collect_new_events(self):
+        for state in self.states.seen:
+            while state.events:
+                yield state.events.pop(0)
+
     @abc.abstractmethod
     def _commit(self):
         raise NotImplementedError

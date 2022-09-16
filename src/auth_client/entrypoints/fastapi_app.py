@@ -15,4 +15,3 @@ def authorize():
     results = messagebus.handle(cmd, uow)
     state_code = results.pop(0)
     return {"state": state_code}
-
