@@ -3,6 +3,13 @@ from src.auth_client.domain import model, events, commands
 
 from . import unit_of_work 
 
+from fastapi.exceptions import HTTPException
+
+
+class InvalidState(HTTPException):
+    pass
+
+
 def create_state(
     cmd: commands.CreateState,
     uow: unit_of_work.AbstractUnitOfWork
@@ -29,3 +36,18 @@ def state_expired(
     uow: unit_of_work.AbstractUnitOfWork
 ):
     pass
+
+
+def auth_code_recieved(
+    event: events.AuthCodeRecieved,
+    uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        state = uow.states.get(event.state_code)
+        if state is None or not state.is_active:
+            raise InvalidState()
+        state.deactivate()
+        grant = uow.grants.add("authorization_code", event.auth_code)
+        uow.commit()
+
+
