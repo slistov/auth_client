@@ -7,7 +7,7 @@ class State:
             self.code = self._generate_code()
             self.created = datetime.datetime.utcnow()
             self.is_active = True
-            self.events = []  # type: List[events.Event]            
+            self.events = []  # """ type: List[events.Event]            
         else:
             self.code = code
     
