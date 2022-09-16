@@ -13,3 +13,7 @@ class StateExpired(Event):
     pass
 
 
+@dataclass
+class AuthCodeRecieved(Event):
+    state_code: str
+    auth_code: str
