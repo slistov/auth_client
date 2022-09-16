@@ -21,7 +21,7 @@ class State:
         self.is_active = False
 
 class Grant:
-    grant_type = Union[Literal("authorization_code"), Literal("refresh_token")]
+    grant_type = Union[Literal["authorization_code"], Literal["refresh_token"]]
 
     def __init__(self, grant_type: grant_type, code: str) -> None:
         self.grant_type = grant_type
