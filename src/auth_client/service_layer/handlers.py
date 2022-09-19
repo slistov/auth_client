@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 from src.auth_client.domain import model, events, commands
+from src.auth_client import config
 
 from . import unit_of_work 
 
