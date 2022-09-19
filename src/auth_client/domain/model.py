@@ -5,12 +5,12 @@ class State:
     def __init__(self, code: str = None) -> None:
         if not code:
             self.code = self._generate_code()
-            self.created = datetime.datetime.utcnow()
-            self.is_active = True
-            self.events = []  # """ type: List[events.Event]            
         else:
             self.code = code
-    
+        self.created = datetime.datetime.utcnow()
+        self.is_active = True
+        self.events = []  # """ type: List[events.Event]            
+        
     def _generate_code(self):
         return "some_code"
     
@@ -28,8 +28,6 @@ class Grant:
         self.code = code
         self.created = datetime.datetime.utcnow()
         self.is_active = True        
-
-
 
 
 class Token:

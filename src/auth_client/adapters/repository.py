@@ -4,14 +4,14 @@ from src.auth_client.domain import model
 
 class AbstractRepository(abc.ABC):
     def __init__(self):
-        self.seen = set()  # type: Set[model.State]
+        self.seen = set()  # type: Set[model.State] 
 
-    def add(self, state: model.State):
+    def add(self, state: model.State) -> model.State:
         self._add(state)
         self.seen.add(state)
 
-    def get(self, sku) -> model.State:
-        state = self._get(sku)
+    def get(self, code) -> model.State:
+        state = self._get(code)
         if state:
             self.seen.add(state)
         return state
