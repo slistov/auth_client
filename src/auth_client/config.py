@@ -14,13 +14,7 @@ def get_postgres_uri():
 
 def get_api_url():
     host = os.environ.get("API_HOST", "localhost")
-    if host == "localhost":
-        port = 9000
-        schema = f"http://"
-    else: 
-        port = 9000
-        schema = f"https://"
-    return f"{schema}{host}:{port}"
+    return f"{host}"
 
 def get_oauth_host():
     host = os.environ.get("OAUTH_HOST", "localhost:8000")    
@@ -39,3 +33,7 @@ def get_oauth_callback_URL():
 
 def get_scope():
     return os.environ.get("SCOPE", "email")
+
+def get_api_authorize_uri():
+    endpoint = os.environ.get("API_AUTHORIZE")
+    return f"{endpoint}"
