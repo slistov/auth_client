@@ -1,17 +1,20 @@
 from src.auth_client.domain import model
 from pytest import Session
 
-class FakeCodeGenerator():
-    def get_state_code(self):
-        return "test_state"
+def test_validating_state_code():
+    pass
 
-def test_state_is_saved_in_db(session):
-    # code_gen = FakeCodeGenerator()
-    # new_state = code_gen.get_state_code()
+def test_requesting_oauth_using_auth_code_grant():
+    pass
 
-    state = model.State()
-    code = state.get_code()
+def test_requesting_oauth_access_token____using_refresh_token_grant():
+    pass
 
-    
+def test_requesting_oauth_access_token____using_auth_code_grant():
+    pass
 
-    assert code == "test_state"
+def test_requesting_oauth_access_token____using_any_grant():
+    pass
+
+def test_requesting_oauth_user_info____using_access_token():
+    pass
