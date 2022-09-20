@@ -16,7 +16,7 @@ def test_uow_can_save_a_state(session_factory):
 
     uow = unit_of_work.SqlAlchemyUnitOfWork(session_factory)
     with uow:
-        state = uow.states.get(obj_code="test_state_code")
+        state = uow.states.get(code="test_state_code")
         code = state.code
         uow.commit()
 
