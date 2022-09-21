@@ -35,92 +35,36 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 class TestState:
     def test_create_state(self):
         uow = FakeUnitOfWork()
-        messagebus.handle(commands.CreateState(), uow)
-        state = model.State(code="test_code")
-        
-        uow.states.add(state)
-        db_state = uow.states.get(state.code)
-        assert db_state.code == state.code
+        results = messagebus.handle(commands.CreateState(), uow)
+        state_code = results.pop(0)
+
+        db_state = uow.states.get(state_code)
+        assert db_state.code == state_code
         assert uow.committed
+    
+    def test_validate_state_valid(self):
+        uow = FakeUnitOfWork()
+        state = model.State(code="test_code")
+        uow.states.add(state)
 
-    # def test_get_state(self):
-    #     uow = FakeUnitOfWork()
-    #     messagebus.handle(commands.CreateBatch("b1", "GARISH-RUG", 100, None), uow)
-    #     messagebus.handle(commands.CreateBatch("b2", "GARISH-RUG", 99, None), uow)
-    #     assert "b2" in [b.reference for b in uow.states.get("GARISH-RUG").batches]
+        results = messagebus.handle(commands.ValidateState(code="test_code"), uow)
+        assert results.pop(0)
 
+    def test_validate_state_wrong_stateCode(self):
+        uow = FakeUnitOfWork()
+        state = model.State(code="test_code")
+        uow.states.add(state)
 
-# class TestAllocate:
-#     def test_allocates(self):
-#         uow = FakeUnitOfWork()
-#         messagebus.handle(
-#             commands.CreateBatch("batch1", "COMPLICATED-LAMP", 100, None), uow
-#         )
-#         results = messagebus.handle(
-#             commands.Allocate("o1", "COMPLICATED-LAMP", 10), uow
-#         )
-#         assert results.pop(0) == "batch1"
-#         [batch] = uow.states.get("COMPLICATED-LAMP").batches
-#         assert batch.available_quantity == 90
+        with pytest.raises(handlers.InvalidState, match="State not found"):
+            messagebus.handle(commands.ValidateState("any_wrong_state"), uow)
 
-#     def test_errors_for_invalid_sku(self):
-#         uow = FakeUnitOfWork()
-#         messagebus.handle(commands.CreateBatch("b1", "AREALSKU", 100, None), uow)
+    def test_validate_state_inactive(self):
+        uow = FakeUnitOfWork()
+        state = model.State(code="test_code")
+        state.deactivate()
+        uow.states.add(state)
 
-#         with pytest.raises(handlers.InvalidSku, match="Invalid sku NONEXISTENTSKU"):
-#             messagebus.handle(commands.Allocate("o1", "NONEXISTENTSKU", 10), uow)
-
-#     def test_commits(self):
-#         uow = FakeUnitOfWork()
-#         messagebus.handle(
-#             commands.CreateBatch("b1", "OMINOUS-MIRROR", 100, None), uow
-#         )
-#         messagebus.handle(commands.Allocate("o1", "OMINOUS-MIRROR", 10), uow)
-#         assert uow.committed
-
-#     def test_sends_email_on_out_of_stock_error(self):
-#         uow = FakeUnitOfWork()
-#         messagebus.handle(
-#             commands.CreateBatch("b1", "POPULAR-CURTAINS", 9, None), uow
-#         )
-
-#         with mock.patch("allocation.adapters.email.send") as mock_send_mail:
-#             messagebus.handle(commands.Allocate("o1", "POPULAR-CURTAINS", 10), uow)
-#             assert mock_send_mail.call_args == mock.call(
-#                 "stock@made.com", f"Out of stock for POPULAR-CURTAINS"
-#             )
+        with pytest.raises(handlers.InvalidState, match="State is inactive"):
+            messagebus.handle(commands.ValidateState("test_code"), uow)
 
 
-# class TestChangeBatchQuantity:
-#     def test_changes_available_quantity(self):
-#         uow = FakeUnitOfWork()
-#         messagebus.handle(
-#             commands.CreateBatch("batch1", "ADORABLE-SETTEE", 100, None), uow
-#         )
-#         [batch] = uow.states.get(sku="ADORABLE-SETTEE").batches
-#         assert batch.available_quantity == 100
-
-#         messagebus.handle(commands.ChangeBatchQuantity("batch1", 50), uow)
-
-#         assert batch.available_quantity == 50
-
-#     def test_reallocates_if_necessary(self):
-#         uow = FakeUnitOfWork()
-#         history = [
-#             commands.CreateBatch("batch1", "INDIFFERENT-TABLE", 50, None),
-#             commands.CreateBatch("batch2", "INDIFFERENT-TABLE", 50, date.today()),
-#             commands.Allocate("order1", "INDIFFERENT-TABLE", 20),
-#             commands.Allocate("order2", "INDIFFERENT-TABLE", 20),
-#         ]
-#         for msg in history:
-#             messagebus.handle(msg, uow)
-#         [batch1, batch2] = uow.states.get(sku="INDIFFERENT-TABLE").batches
-#         assert batch1.available_quantity == 10
-#         assert batch2.available_quantity == 50
-
-#         messagebus.handle(commands.ChangeBatchQuantity("batch1", 25), uow)
-
-#         # order1 or order2 will be deallocated, so we'll have 25 - 20
-#         assert batch1.available_quantity == 5
-#         # and 20 will be reallocated to the next batch
-#         assert batch2.available_quantity == 30

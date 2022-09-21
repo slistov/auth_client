@@ -1,14 +1,23 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from src.auth_client.domain import model, events, commands
 from src.auth_client import config
 
 from . import unit_of_work 
 
 from fastapi.exceptions import HTTPException
+from fastapi import status
 
 
-class InvalidState(HTTPException):
-    pass
+class InvalidHTTPException(HTTPException):
+    def __init__(self, detail: Any) -> None:
+        super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+
+class InvalidState(InvalidHTTPException):
+    def __init__(self, description: Any = None) -> None:
+        detail = {"error": "state_error"}
+        if description:
+            detail.update({"description": description})
+        super().__init__(detail=detail)
 
 
 def create_state(
@@ -28,8 +37,12 @@ def validate_state(
 ) -> bool:
     with uow:
         state = uow.states.get(cmd.code)
+        if state is None:
+            raise InvalidState("State not found")
+        if not state.is_active:
+            raise InvalidState("State is inactive")
         uow.commit()
-        return state is not None
+        return state
 
 
 def state_expired(
