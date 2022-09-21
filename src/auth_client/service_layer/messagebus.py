@@ -1,3 +1,9 @@
+"""Шина сообщений
+
+Запускает обработку команд и событий
+(Вызывает соответствующие обработчики)
+"""
+
 # pylint: disable=broad-except
 from __future__ import annotations
 import logging
@@ -17,6 +23,9 @@ def handle(
     message: Message,
     uow: unit_of_work.AbstractUnitOfWork,
 ):
+    """Обработать очередь сообщений
+    
+    Запускает обработчики для каждого сообщения из очереди в зависимости от типа сообщения"""
     results = []
     queue = [message]
     while queue:
@@ -36,6 +45,7 @@ def handle_event(
     queue: List[Message],
     uow: unit_of_work.AbstractUnitOfWork,
 ):
+    """Обработать сообщение с типом Событие (event)"""
     for handler in EVENT_HANDLERS[type(event)]:
         try:
             logger.debug("handling event %s with handler %s", event, handler)
@@ -51,6 +61,7 @@ def handle_command(
     queue: List[Message],
     uow: unit_of_work.AbstractUnitOfWork,
 ):
+    """Обработать сообщение с типом Команда (command)"""
     logger.debug("handling command %s", command)
     try:
         handler = COMMAND_HANDLERS[type(command)]
@@ -61,11 +72,12 @@ def handle_command(
         logger.exception("Exception handling command %s", command)
         raise
 
-
+# events Dict
 EVENT_HANDLERS = {
     events.StateExpired: [handlers.state_expired],
 }  # type: Dict[Type[events.Event], List[Callable]]
 
+# commands Dict
 COMMAND_HANDLERS = {
     commands.CreateState: handlers.create_state,
     commands.ValidateState: handlers.validate_state,

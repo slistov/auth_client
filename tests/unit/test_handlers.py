@@ -44,7 +44,7 @@ class TestState:
     
     def test_validate_state_valid(self):
         uow = FakeUnitOfWork()
-        state = model.State(code="test_code")
+        state = model.State()
         uow.states.add(state)
 
         results = messagebus.handle(commands.ValidateState(code="test_code"), uow)
@@ -52,7 +52,7 @@ class TestState:
 
     def test_validate_state_wrong_stateCode(self):
         uow = FakeUnitOfWork()
-        state = model.State(code="test_code")
+        state = model.State()
         uow.states.add(state)
 
         with pytest.raises(handlers.InvalidState, match="State not found"):
@@ -60,11 +60,14 @@ class TestState:
 
     def test_validate_state_inactive(self):
         uow = FakeUnitOfWork()
-        state = model.State(code="test_code")
+        state = model.State()
         state.deactivate()
         uow.states.add(state)
 
         with pytest.raises(handlers.InvalidState, match="State is inactive"):
-            messagebus.handle(commands.ValidateState("test_code"), uow)
+            messagebus.handle(commands.ValidateState(state.code), uow)
 
 
+class TestAuthCode:
+    def Test_code():
+        pass
