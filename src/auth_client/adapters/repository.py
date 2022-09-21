@@ -1,10 +1,21 @@
+"""Паттерн Репозиторий
+
+Абстракция над хранилищем"""
+
 import abc
 from src.auth_client.adapters import orm
 from src.auth_client.domain import model
 
 class AbstractRepository(abc.ABC):
+    """Абстрактный репозиторий
+
+    Помимо заглушек, ведёт список seen:
+    множество объектов, с которым поработал репозиторий.
+    Это множество используется для сбора и обработки всех событий в объектах множества
+    """
     def __init__(self):
-        self.seen = set()  # type: Set[model.State] 
+        self.seen = set()  #""" type: Set[model.State] 
+
 
     def add(self, state: model.State) -> model.State:
         self._add(state)
@@ -41,13 +52,4 @@ class SQLAlchemyRepository(AbstractRepository):
 
     def _get(self, code): #  -> model.State:
         return self.session.query(model.State).filter_by(code=code).first()
-
-    # def _get_by_batchref(self, batchref):
-    #     return (
-    #         self.session.query(model.State)
-    #         .join(model.Batch)
-    #         .filter(orm.batches.c.reference == batchref)
-    #         .first()
-    #     )
-
 
