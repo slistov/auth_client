@@ -86,5 +86,5 @@ def auth_code_recieved(
         state.deactivate()
         grant = uow.grants.add("authorization_code", event.auth_code)
         uow.commit()
-
+        return grant
 
