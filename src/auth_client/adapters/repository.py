@@ -6,39 +6,35 @@ import abc
 from src.auth_client.adapters import orm
 from src.auth_client.domain import model
 
+
 class AbstractRepository(abc.ABC):
     """Абстрактный репозиторий
-
-    Помимо заглушек, ведёт список seen:
-    множество объектов, с которым поработал репозиторий.
-    Это множество используется для сбора и обработки всех событий в объектах множества
     """
-    def __init__(self):
-        self.seen = set()  #""" type: Set[model.State] 
+    def add(self, auth: model.Authorization) -> model.Authorization:
+        self._add(auth)
 
+    def get_by_grant_code(self, code) -> model.Authorization:
+        auth = self._get_by_grant_code(code)
+        return auth
 
-    def add(self, state: model.State) -> model.State:
-        self._add(state)
-        self.seen.add(state)
-
-    def get(self, code) -> model.State:
-        state = self._get(code)
-        if state:
-            self.seen.add(state)
-        return state
-
-    def get_by_batchref(self, batchref) -> model.State:
-        state = self._get_by_batchref(batchref)
-        if state:
-            self.seen.add(state)
-        return state
+    def get_by_token(self, token) -> model.Authorization:
+        auth = self._get_by_token(token)
+        return auth
 
     @abc.abstractmethod
-    def _add(self, state: model.State):
+    def _add(self, auth: model.Authorization):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _get(self, sku) -> model.State:
+    def _get_by_state_code(self, code) -> model.Authorization:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _get_by_grant_code(self, code) -> model.Authorization:
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def _get_by_token(self, token) -> model.Authorization:
         raise NotImplementedError
 
 
@@ -47,9 +43,30 @@ class SQLAlchemyRepository(AbstractRepository):
         super().__init__()        
         self.session = session
 
-    def _add(self, state: model.State):
-        self.session.add(state)
+    def _add(self, auth: model.Authorization):
+        self.session.add(auth)
 
-    def _get(self, code): #  -> model.State:
-        return self.session.query(model.State).filter_by(code=code).first()
+    def _get_by_state_code(self, code) -> model.Authorization:
+        return (
+            self.session.query(model.Authorization)
+            .join(model.State)
+            .filter(orm.states.code == code)
+            .first()
+        )
 
+    def _get_by_grant_code(self, code) -> model.Authorization:
+        return (
+            self.session.query(model.Authorization)
+            .join(model.Grant)
+            .filter(orm.grants.code == code)
+            .first()
+        )
+
+
+    def _get_by_token(self, token) -> model.Authorization:
+        return (
+            self.session.query(model.Authorization)
+            .join(model.Token)
+            .filter(orm.tokens.token == token)
+            .first()
+        )

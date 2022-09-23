@@ -11,13 +11,10 @@ class State:
 
     Модель используется в п.1-2  полного сценария, см. README.md"""
     def __init__(self, code: str = None) -> None:
-        self.code = self._generate_code()
+        self.code = code
         self.created = datetime.datetime.utcnow()
         self.is_active = True
         self.events = []  # """ type: List[events.Event]            
         
-    def _generate_code(self):
-        return "some_code"
-    
     def deactivate(self):
         self.is_active = False
