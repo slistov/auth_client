@@ -71,12 +71,27 @@ class TestState:
 class TestAuthorization:
     def test_auth_creation(self):
         uow = FakeUnitOfWork()
-        results = messagebus.handle(
-            commands.CreateAuthorization(), uow
+        messagebus.handle(
+            commands.CreateAuthorization(model.State("test_state_code")), uow
         )
-        state = results.pop(0)
-        assert uow.authorizations.get_by_state_code(state.code) is not None
+        assert uow.authorizations.get_by_state_code("test_state_code") is not None
         assert uow.committed
+    
+    def test_for_existing_authorization_by_grant(self):
+        uow = FakeUnitOfWork()
+        messagebus.handle(commands.CreateAuthorization(model.State("test_state_code")), uow)
+        messagebus.handle(events.GrantRecieved("authorization_code", "test_code"))
+        assert uow.authorizations.get_by_grant_code("test_code") is not None
+        assert uow.committed
+
+    def test_for_existing_authorization_by_access_token(self):
+        uow = FakeUnitOfWork()
+        results = messagebus.handle(commands.CreateAuthorization(model.State("test_state_code")), uow)
+        authorization = results.pop(0)
+        messagebus.handle(events.TokenRecieved(authorization, "test_token"))
+        assert uow.authorizations.get_by_token("test_token") is not None
+        assert uow.committed
+
 
 # class TestAuthCode:
 #     def test_code_recieved_and_saved_if_state_is_valid(self):
