@@ -75,7 +75,8 @@ def handle_command(
 # events Dict
 EVENT_HANDLERS = {
     events.StateExpired: [handlers.state_expired],
-    events.AuthCodeRecieved: [handlers.auth_code_recieved]
+    events.AuthCodeRecieved: [handlers.auth_code_recieved],
+    #events.GrantRecieved: [handlers.grant_recieved]
 }  # type: Dict[Type[events.Event], List[Callable]]
 
 # commands Dict

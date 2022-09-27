@@ -23,7 +23,7 @@ class FakeRepository(repository.AbstractRepository):
 
     def _get_by_grant_code(self, code):
         return next(
-            (a for a in self._authorizations if code == grant.code for grant in a.grants), None
+            (a for a in self._authorizations for grant in a.grants if code == grant.code), None
         )
 
     def _get_by_token(self, access_token) -> model.Authorization:
@@ -90,7 +90,7 @@ class TestAuthorization:
     def test_for_existing_authorization_by_grant(self):
         uow = FakeUnitOfWork()
         messagebus.handle(commands.CreateAuthorization("test_state_code"), uow)
-        messagebus.handle(events.GrantRecieved("authorization_code", "test_code"))
+        messagebus.handle(events.AuthCodeRecieved(state_code="test_state_code", auth_code="test_code"), uow)
         assert uow.authorizations.get_by_grant_code("test_code") is not None
         assert uow.committed
 
