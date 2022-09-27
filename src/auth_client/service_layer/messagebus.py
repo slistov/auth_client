@@ -82,6 +82,7 @@ EVENT_HANDLERS = {
 COMMAND_HANDLERS = {
     commands.CreateState: handlers.create_state,
     commands.ValidateState: handlers.validate_state,
+    commands.CreateAuthorization: handlers.create_authorization,
     # commands.CreateBatch: handlers.add_batch,
     # commands.ChangeBatchQuantity: handlers.change_batch_quantity,
 }  # type: Dict[Type[commands.Command], Callable]

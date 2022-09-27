@@ -34,7 +34,7 @@ class FakeRepository(repository.AbstractRepository):
 
 class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
     def __init__(self):
-        self.states = FakeRepository([])
+        self.authorizations = FakeRepository([])
         self.committed = False
 
     def _commit(self):
@@ -83,15 +83,13 @@ class TestState:
 class TestAuthorization:
     def test_auth_creation(self):
         uow = FakeUnitOfWork()
-        messagebus.handle(
-            commands.CreateAuthorization(state="test_state_code"), uow
-        )
+        messagebus.handle(commands.CreateAuthorization("test_state_code"), uow)
         assert uow.authorizations.get_by_state_code("test_state_code") is not None
         assert uow.committed
     
     def test_for_existing_authorization_by_grant(self):
         uow = FakeUnitOfWork()
-        messagebus.handle(commands.CreateAuthorization(model.State("test_state_code")), uow)
+        messagebus.handle(commands.CreateAuthorization("test_state_code"), uow)
         messagebus.handle(events.GrantRecieved("authorization_code", "test_code"))
         assert uow.authorizations.get_by_grant_code("test_code") is not None
         assert uow.committed

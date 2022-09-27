@@ -10,15 +10,29 @@ from src.auth_client.domain import model
 class AbstractRepository(abc.ABC):
     """Абстрактный репозиторий
     """
+    def __init__(self):
+        self.seen = set()  # type: Set[model.Product]
+
     def add(self, auth: model.Authorization) -> model.Authorization:
         self._add(auth)
+        self.seen.add(auth)        
+
+    def get_by_state_code(self, state_code) -> model.Authorization:
+        auth = self._get_by_state_code(state_code)
+        if auth:
+            self.seen.add(auth)
+        return auth
 
     def get_by_grant_code(self, code) -> model.Authorization:
         auth = self._get_by_grant_code(code)
+        if auth:
+            self.seen.add(auth)
         return auth
 
     def get_by_token(self, token) -> model.Authorization:
         auth = self._get_by_token(token)
+        if auth:
+            self.seen.add(auth)
         return auth
 
     @abc.abstractmethod
@@ -61,7 +75,6 @@ class SQLAlchemyRepository(AbstractRepository):
             .filter(orm.grants.code == code)
             .first()
         )
-
 
     def _get_by_token(self, token) -> model.Authorization:
         return (
