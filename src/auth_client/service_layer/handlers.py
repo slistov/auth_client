@@ -72,7 +72,6 @@ def state_expired(
     """
     pass
 
-
 def auth_code_recieved(
     event: events.AuthCodeRecieved,
     uow: unit_of_work.AbstractUnitOfWork
@@ -80,18 +79,19 @@ def auth_code_recieved(
     """Обработчик события Получен код авторизации
     """
     with uow:
-        state = uow.states.get(event.state_code)
-        if state is None or not state.is_active:
+        auth = uow.authorizations.get_by_state_code(event.state_code)
+        if auth is None or not auth.is_active or not auth.state.is_active:
             raise InvalidState()
-        state.deactivate()
-        grant = uow.grants.add("authorization_code", event.auth_code)
+        auth.state.deactivate()
+        auth.grants.append("authorization_code", event.auth_code)
         uow.commit()
-        return grant
-
 
 def create_authorization(
     cmd: commands.CreateAuthorization,
     uow: unit_of_work.AbstractUnitOfWork
 ):
     with uow:
-        
+        state = model.State(code=cmd.state_code)
+        auth = model.Authorization(state=state)
+        uow.authorizations.add(auth)
+        uow.commit()

@@ -23,4 +23,4 @@ class ValidateState(Command):
 
 @dataclass
 class CreateAuthorization(Command):
-    state: str
+    state_code: str
