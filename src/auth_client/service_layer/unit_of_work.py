@@ -23,9 +23,9 @@ class AbstractUnitOfWork(abc.ABC):
         self._commit()
 
     def collect_new_events(self):
-        auth = self.authorizations.seen
-        while state.events:
-            yield state.events.pop(0)
+        for obj in self.authorizations.seen:
+            while obj.events:
+                yield obj.events.pop(0)
 
     @abc.abstractmethod
     def _commit(self):
