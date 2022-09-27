@@ -72,6 +72,33 @@ def state_expired(
     """
     pass
 
+
+def create_authorization(
+    cmd: commands.CreateAuthorization,
+    uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        state = model.State(code=cmd.state_code)
+        auth = model.Authorization(state=state)
+        uow.authorizations.add(auth)
+        uow.commit()
+
+
+# def grant_recieved(
+#     event: events.GrantRecieved,
+#     uow: unit_of_work.AbstractUnitOfWork
+# ):
+#     """Обработчик события Получен грант
+#     """
+#     with uow:
+#         auth = uow.authorizations.get_by__code(event.state_code)
+#         if auth is None or not auth.is_active or not auth.state.is_active:
+#             raise InvalidState()
+#         auth.state.deactivate()
+#         auth.grants.append("authorization_code", event.auth_code)
+#         uow.commit()
+
+
 def auth_code_recieved(
     event: events.AuthCodeRecieved,
     uow: unit_of_work.AbstractUnitOfWork
@@ -83,15 +110,6 @@ def auth_code_recieved(
         if auth is None or not auth.is_active or not auth.state.is_active:
             raise InvalidState()
         auth.state.deactivate()
-        auth.grants.append("authorization_code", event.auth_code)
-        uow.commit()
-
-def create_authorization(
-    cmd: commands.CreateAuthorization,
-    uow: unit_of_work.AbstractUnitOfWork
-):
-    with uow:
-        state = model.State(code=cmd.state_code)
-        auth = model.Authorization(state=state)
-        uow.authorizations.add(auth)
+        grant = model.Grant("authorization_code", event.auth_code)
+        auth.grants.append(grant)
         uow.commit()
