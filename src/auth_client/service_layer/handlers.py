@@ -88,3 +88,10 @@ def auth_code_recieved(
         uow.commit()
         return grant
 
+
+def create_authorization(
+    cmd: commands.CreateAuthorization,
+    uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        

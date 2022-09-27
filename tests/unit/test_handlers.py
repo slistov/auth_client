@@ -9,15 +9,27 @@ from src.auth_client.service_layer import handlers, messagebus, unit_of_work
 from src.auth_client.domain import model
 
 class FakeRepository(repository.AbstractRepository):
-    def __init__(self, states):
+    def __init__(self, authorizations):
         super().__init__()
-        self._states = set(states)
+        self._authorizations = set(authorizations)
 
-    def _add(self, state):
-        self._states.add(state)
+    def _add(self, authorization):
+        self._authorizations.add(authorization)
 
-    def _get(self, code):
-        return next((p for p in self._states if p.code == code), None)
+    def _get_by_state_code(self, code) -> model.Authorization:
+        return next(
+            (a for a in self._authorizations if code == a.state.code), None
+        )
+
+    def _get_by_grant_code(self, code):
+        return next(
+            (a for a in self._authorizations if code == grant.code for grant in a.grants), None
+        )
+
+    def _get_by_token(self, access_token) -> model.Authorization:
+        return next(
+            (a for a in self._authorizations if access_token == token.access_token for token in a.tokens), None
+        )
 
 
 class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
@@ -72,7 +84,7 @@ class TestAuthorization:
     def test_auth_creation(self):
         uow = FakeUnitOfWork()
         messagebus.handle(
-            commands.CreateAuthorization(model.State("test_state_code")), uow
+            commands.CreateAuthorization(state="test_state_code"), uow
         )
         assert uow.authorizations.get_by_state_code("test_state_code") is not None
         assert uow.committed
