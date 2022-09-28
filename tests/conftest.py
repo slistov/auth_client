@@ -9,8 +9,10 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from src.auth_client.adapters.orm import metadata, start_mappers
+from src.auth_client.adapters.orm import mapper_registry, start_mappers
 from src.auth_client import config
+
+metadata = mapper_registry.metadata
 
 
 @pytest.fixture
