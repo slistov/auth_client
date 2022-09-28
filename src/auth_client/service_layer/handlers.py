@@ -14,14 +14,15 @@ from fastapi import status
 
 
 class InvalidHTTPException(HTTPException):
-    """Фиксирует статус 403"""
+    """Вернуть статус 403"""
     def __init__(self, detail: Any) -> None:
         super().__init__(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
 
-class InvalidState(InvalidHTTPException):
-    """Фиксирует общее сообщение об ошибке: {error: state_error}
+
+class StateError(InvalidHTTPException):
+    """Вернуть общее сообщение об ошибке: {error: state_error}
     
-    Добавляет переданное описание description к фиксированному сообщению об ошибке"""
+    Добавляет фиксированное сообщение об ошибке к переданному описанию description """
     def __init__(self, description: Any = None) -> None:
         detail = {"error": "state_error"}
         if description:
@@ -29,59 +30,29 @@ class InvalidState(InvalidHTTPException):
         super().__init__(detail=detail)
 
 
-def create_state(
-    cmd: commands.CreateState,
-    uow: unit_of_work.AbstractUnitOfWork
-) -> str:
-    """Обработчик команды на создание нового state
-    
-    Возвращает код для созданного state.
-    Этот код впоследствии будет передан в query-параметрах строки редиректа"""
-    with uow:
-        state = model.State()
-        uow.states.add(state)
-        uow.commit()
-        return state.code
+class InvalidState(StateError):
+    def __init__(self, description: Any = None) -> None:
+        super().__init__(description)
 
-
-def validate_state(
-    cmd: commands.ValidateState,
-    uow: unit_of_work.AbstractUnitOfWork
-) -> bool:
-    """Обработчик команды на валидацию state-кода
-    
-    Возвращает экземпляр State, либо одно из исключений
-    - InvalidState("State not found")
-    - InvalidState("State is inactive")
+class InactiveState(StateError):
+    """Выделить отдельно ситуацию, когда используют неактивный (использованный)  state.
+    По бизнес-процессу в этом случае нужно аннулировать авторизацию,
+    так как попытка использовать уже использованный state расценивается как атака
     """
-    with uow:
-        state = uow.states.get(cmd.code)
-        if state is None:
-            raise InvalidState("State not found")
-        if not state.is_active:
-            raise InvalidState("State is inactive")
-        uow.commit()
-        return state
-
-
-def state_expired(
-    event: events.StateExpired,
-    uow: unit_of_work.AbstractUnitOfWork
-):
-    """Обработчик события Истёк state
-    """
-    pass
+    def __init__(self, description: Any = None) -> None:
+        super().__init__(description)
 
 
 def create_authorization(
     cmd: commands.CreateAuthorization,
     uow: unit_of_work.AbstractUnitOfWork
-):
+) -> model.Authorization:
     with uow:
         state = model.State(code=cmd.state_code)
         auth = model.Authorization(state=state)
         uow.authorizations.add(auth)
         uow.commit()
+        return auth
 
 
 # def grant_recieved(
@@ -99,17 +70,35 @@ def create_authorization(
 #         uow.commit()
 
 
-def auth_code_recieved(
-    event: events.AuthCodeRecieved,
+def process_auth_code_recieved(
+    cmd: commands.ProcessAuthCodeRecieved,
     uow: unit_of_work.AbstractUnitOfWork
 ):
-    """Обработчик события Получен код авторизации
+    """Обработчик команды Обработать код авторизации
     """
     with uow:
-        auth = uow.authorizations.get_by_state_code(event.state_code)
-        if auth is None or not auth.is_active or not auth.state.is_active:
-            raise InvalidState()
+        auth = uow.authorizations.get_by_state_code(cmd.state_code)
+        if auth is None or not auth.is_active:
+            raise InvalidState("No active authorization found")
+        
+        if not auth.state.is_active:
+            raise InactiveState("State is inactive")
+
         auth.state.deactivate()
-        grant = model.Grant("authorization_code", event.auth_code)
+        grant = model.Grant("authorization_code", cmd.auth_code)
         auth.grants.append(grant)
+        uow.commit()
+
+
+def token_recieved(
+    event: events.TokenRecieved,
+    uow: unit_of_work.AbstractUnitOfWork
+):
+        auth = uow.authorizations.get_by_grant_code(event.grant_code)
+        grant = auth.get_grant_by_code(event.grant_code)
+        if auth is None or not auth.is_active or not grant.is_active:
+            raise InvalidState()
+        grant.deactivate()
+        token = model.Token("test_token")
+        auth.tokens.append(token)
         uow.commit()

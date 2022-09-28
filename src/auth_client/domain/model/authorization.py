@@ -30,5 +30,8 @@ class Authorization:
         self.user = user if user else None
         self.is_active = is_active
         self.events = []
+    
+    def get_grant_by_code(self, code: str):
+        return next(grant for grant in self.grants if grant.code == code)
 
     

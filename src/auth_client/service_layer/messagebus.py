@@ -74,15 +74,12 @@ def handle_command(
 
 # events Dict
 EVENT_HANDLERS = {
-    events.StateExpired: [handlers.state_expired],
-    events.AuthCodeRecieved: [handlers.auth_code_recieved],
-    #events.GrantRecieved: [handlers.grant_recieved]
+    events.TokenRecieved: [handlers.token_recieved],
 }  # type: Dict[Type[events.Event], List[Callable]]
 
 # commands Dict
 COMMAND_HANDLERS = {
-    commands.CreateState: handlers.create_state,
-    commands.ValidateState: handlers.validate_state,
+    commands.ProcessAuthCodeRecieved: handlers.process_auth_code_recieved,    
     commands.CreateAuthorization: handlers.create_authorization,
     # commands.CreateBatch: handlers.add_batch,
     # commands.ChangeBatchQuantity: handlers.change_batch_quantity,
