@@ -85,6 +85,11 @@ class SQLAlchemyRepository(AbstractRepository):
             .first()
         )
     
+    def cancel_authorization(self):
+        return (
+            self.session.query(model.Authorization).
+            join(model.State)
+        )
     # def _get_active__by_state_code(self, code) -> model.Authorization:
     #     return (
     #         self.session.query(model.Authorization)

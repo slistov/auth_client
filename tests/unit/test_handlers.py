@@ -70,7 +70,7 @@ class TestAuthorizationCodeRecieving:
         with pytest.raises(handlers.InvalidState, match="No active authorization found"):
             messagebus.handle(commands.ProcessAuthCodeRecieved("wrong_state_code", "test_code"), uow)
 
-    def test_for_existing_authorization_wrong_stateCode_raises_INACTIVEState_exception(self):
+    def test_for_existing_authorization_inactive_stateCode_raises_INACTIVEState_exception(self):
         uow = FakeUnitOfWork()
         results = messagebus.handle(commands.CreateAuthorization("test_state_code"), uow)
         auth = results.pop(0)
@@ -78,6 +78,18 @@ class TestAuthorizationCodeRecieving:
 
         with pytest.raises(handlers.InactiveState, match="State is inactive"):
             messagebus.handle(commands.ProcessAuthCodeRecieved("test_state_code", "test_code"), uow)
+
+    def test_for_existing_authorization_inactive_stateCode_deactivates_authorization_and_its_grants_and_tokens(self):
+        uow = FakeUnitOfWork()
+        results = messagebus.handle(commands.CreateAuthorization("test_state_code"), uow)
+        auth = results.pop(0)
+        auth.state.deactivate()
+
+        with pytest.raises(handlers.InactiveState, match="State is inactive"):
+            messagebus.handle(commands.ProcessAuthCodeRecieved("test_state_code", "test_code"), uow)
+        
+        assert auth.is_active == False
+        assert auth.state.is_active == False
 
 
 class TestAccessTokenRecieving:

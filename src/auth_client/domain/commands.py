@@ -34,3 +34,13 @@ class ProcessAuthCodeRecieved(Command):
     """
     state_code: str
     auth_code: str
+
+
+@dataclass
+class CancelAuthorization(Command):
+    """Отозвать авторизацию
+    
+    Возникает в случаях
+    - пользователь отзывает авторизацию
+    - заподозрена атака (использован неактивный state, token, refresh_token)"""
+    state_code: str
