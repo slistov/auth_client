@@ -1,33 +1,82 @@
-from sqlalchemy import MetaData, Table, Column, Integer, String, DateTime, Boolean
-from sqlalchemy.orm import mapper, relationship 
-
-
+from sqlalchemy import (
+    MetaData, 
+    Table, 
+    Column, 
+    Integer, 
+    String, 
+    DateTime, 
+    Boolean,
+    ForeignKey,
+    event
+)
 from src.auth_client.domain import model
+from sqlalchemy.orm import relationship, registry
 
-metadata = MetaData()
 
+
+mapper_registry = registry()
+
+
+authorizations = Table(
+    'authorizations', mapper_registry.metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('created', DateTime),
+    Column('is_active', Boolean),
+)
 
 states = Table(
-    'states', metadata,
+    'states', mapper_registry.metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('auth_id', ForeignKey("authorizations.id")),    
     Column('code', String),
     Column('created', DateTime),
     Column('is_active', Boolean),
 )
 
+grants = Table(
+    'grants', mapper_registry.metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('auth_id', ForeignKey("authorizations.id")),    
+    Column('code', String),
+    Column('created', DateTime),
+    Column('is_active', Boolean),
+)
 
-
-
-# tokens = Table(
-#     'tokens', metadata,
-#     Column('id', Integer, primary_key=True, autoincrement=True),
-#     Column('access_token', String(255)),
-# )
+tokens = Table(
+    'tokens', mapper_registry.metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('auth_id', ForeignKey("authorizations.id")),
+    Column('access_token', String),
+    Column('created', DateTime),
+    Column('expires_in', DateTime),
+    Column('is_active', Boolean),
+)
 
 
 def start_mappers():
-    states_mapper = mapper(model.State, states)
-    # tokens_mapper = mapper(model.TokenService, tokens)
+    states_mapper = mapper_registry.map_imperatively(model.State, states)
+    grants_mapper = mapper_registry.map_imperatively(model.Grant, grants)    
+    tokens_mapper = mapper_registry.map_imperatively(model.Token, tokens)
+    mapper_registry.map_imperatively(
+        model.Authorization, 
+        authorizations,
+        properties={
+            "states": relationship(states_mapper),
+            "grants": relationship(grants_mapper),
+            "tokens": relationship(tokens_mapper)
+        }        
+    ) 
+
+@event.listens_for(model.Authorization, "load")
+def receive_load(auth, _):
+    auth.events = []
+
+
+
+    # authorizations_mapper = mapper(model.Authorization, authorizations)
+    # states_mapper = mapper(model.State, states)
+    # grants_mapper = mapper(model.Grant, grants)    
+    # tokens_mapper = mapper(model.Token, tokens)
     
 
 

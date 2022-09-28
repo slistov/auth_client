@@ -43,6 +43,30 @@ class InactiveState(StateError):
         super().__init__(description)
 
 
+class GrantError(InvalidHTTPException):
+    """Вернуть общее сообщение об ошибке: {error: state_error}
+    
+    Добавляет фиксированное сообщение об ошибке к переданному описанию description """
+    def __init__(self, description: Any = None) -> None:
+        detail = {"error": "grant_error"}
+        if description:
+            detail.update({"description": description})
+        super().__init__(detail=detail)
+
+
+class InvalidGrant(GrantError):
+    def __init__(self, description: Any = None) -> None:
+        super().__init__(description)
+
+class InactiveGrant(GrantError):
+    """Выделить отдельно ситуацию, когда используют неактивный (использованный)  state.
+    По бизнес-процессу в этом случае нужно аннулировать авторизацию,
+    так как попытка использовать уже использованный state расценивается как атака
+    """
+    def __init__(self, description: Any = None) -> None:
+        super().__init__(description)
+
+
 def create_authorization(
     cmd: commands.CreateAuthorization,
     uow: unit_of_work.AbstractUnitOfWork
@@ -82,6 +106,7 @@ def process_auth_code_recieved(
             raise InvalidState("No active authorization found")
         
         if not auth.state.is_active:
+            auth.deactivate()
             raise InactiveState("State is inactive")
 
         auth.state.deactivate()
@@ -102,3 +127,28 @@ def token_recieved(
         token = model.Token("test_token")
         auth.tokens.append(token)
         uow.commit()
+
+
+def cancel_authorization(
+    cmd: commands.CancelAuthorization,
+    uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        auth = uow.authorizations.get_by_grant_code(cmd.state_code)
+        
+
+    #     self.is_active = False
+    #     self._deactivate_state()
+    #     self._deactivate_grants()
+    #     self._deactivate_tokens()
+    
+    # def _deactivate_state(self):
+    #     self.state.is_active = False
+    
+    # def _deactivate_grants(self):
+    #     for grant in [grant for grant in self.grants if grant.is_active]:
+    #         grant.is_active = False
+
+    # def _deactivate_tokens(self):
+    #     for token in [token for token in self.tokens if token.is_active]:
+    #         token.is_active = False
