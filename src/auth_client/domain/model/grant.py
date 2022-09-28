@@ -8,4 +8,7 @@ class Grant:
         self.grant_type = grant_type
         self.code = code
         self.created = datetime.datetime.utcnow()
-        self.is_active = True        
+        self.is_active = True 
+
+    def deactivate(self):
+        self.is_active = False

@@ -35,6 +35,7 @@ class AbstractRepository(abc.ABC):
             self.seen.add(auth)
         return auth
 
+
     @abc.abstractmethod
     def _add(self, auth: model.Authorization):
         raise NotImplementedError
@@ -83,3 +84,28 @@ class SQLAlchemyRepository(AbstractRepository):
             .filter(orm.tokens.token == token)
             .first()
         )
+    
+    # def _get_active__by_state_code(self, code) -> model.Authorization:
+    #     return (
+    #         self.session.query(model.Authorization)
+    #         .join(model.State)
+    #         .filter(orm.states.code == code, orm.states.is_active, orm.authorizations.is_active)
+    #         .first()
+    #     )
+
+    # def _get_active_by_grant_code(self, code) -> model.Authorization:
+    #     return (
+    #         self.session.query(model.Authorization)
+    #         .join(model.Grant)
+    #         .filter(orm.grants.code == code, orm.grants.is_active, orm.authorizations.is_active)
+    #         .first()
+    #     )
+
+    # def _get_active_by_token(self, token) -> model.Authorization:
+    #     return (
+    #         self.session.query(model.Authorization)
+    #         .join(model.Token)
+    #         .filter(orm.tokens.token == token, orm.tokens.is_active, orm.authorizations.is_active)
+    #         .first()
+    #     )
+

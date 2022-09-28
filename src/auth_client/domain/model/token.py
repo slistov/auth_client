@@ -1,7 +1,6 @@
 class Token:
-    def __init__(self, auth_service) -> None:
-        self.auth_service = auth_service
-        self.access_token = None
+    def __init__(self, access_token) -> None:
+        self.access_token = access_token
 
     def get_access_token(self):
         if not self.access_token:

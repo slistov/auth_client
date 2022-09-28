@@ -33,18 +33,16 @@ class GrantRecieved(Event):
 
 
 @dataclass
-class AuthCodeRecieved(Event):
-    """Получен код авторизации
+class TokenRecieved(Event):
+    """Получен токен доступа
     
-    Возникает, когда на точку входа API приходит код авторизации.
-    """
-    state_code: str
-    auth_code: str
-
+    Возникает, когда на точку входа API приходит токен доступа"""
+    grant_code: str
+    access_token: str
 
 @dataclass
 class RefreshTokenRecieved(Event):
-    """Получен код авторизации
+    """Получен токен обновления
     
     Возникает, когда на точку входа API приходит токен обновления.
     """
