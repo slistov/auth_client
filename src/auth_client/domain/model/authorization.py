@@ -14,6 +14,7 @@ from .state import State
 from .grant import Grant
 from .token import Token
 from .user import User
+from .. import commands
 
 class Authorization:
     def __init__(
@@ -33,5 +34,6 @@ class Authorization:
     
     def get_grant_by_code(self, code: str):
         return next(grant for grant in self.grants if grant.code == code)
-
     
+    def deactivate(self):
+        self.events.append(commands.CancelAuthorization(self.state.code))

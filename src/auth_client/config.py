@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+import yaml
+config = yaml.safe_load(open("config.yaml", mode="r", encoding="utf-8"))
 
 
 def get_postgres_uri():
@@ -37,3 +39,6 @@ def get_scope():
 def get_api_authorize_uri():
     endpoint = os.environ.get("API_AUTHORIZE")
     return f"{endpoint}"
+
+# def get_token_default_expires_in():
+#     return config

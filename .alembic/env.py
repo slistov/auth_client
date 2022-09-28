@@ -23,7 +23,7 @@ config.set_main_option('sqlalchemy.url', get_postgres_uri())
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 # target_metadata = None
-target_metadata = orm.metadata
+target_metadata = orm.mapper_registry.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
