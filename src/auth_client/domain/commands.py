@@ -27,16 +27,6 @@ class CreateAuthorization(Command):
 
 
 @dataclass
-class ProcessAuthCodeRecieved(Command):
-    """Обработать код авторизации
-    
-    Возникает, когда на точку входа API приходит код авторизации.
-    """
-    state_code: str
-    auth_code: str
-
-
-@dataclass
 class CancelAuthorization(Command):
     """Отозвать авторизацию
     
@@ -44,3 +34,25 @@ class CancelAuthorization(Command):
     - пользователь отзывает авторизацию
     - заподозрена атака (использован неактивный state, token, refresh_token)"""
     state_code: str
+
+
+@dataclass
+class ProcessGrantRecieved(Command):
+    """Обработать полученный грант
+
+    Грант - разрешение на получение токена доступа:
+    - типы 
+        - "authorization_code" (код авторизации)
+        - "refresh_token" (токен обновления)
+    """
+    state_code: Optional[str]
+    type: str
+    code: str
+
+
+@dataclass
+class ProcessTokenRecieved(Command):
+    """Обработать полученный токен доступа
+    """
+    grant_code: str
+    access_token: str

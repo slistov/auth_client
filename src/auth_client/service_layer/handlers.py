@@ -94,8 +94,8 @@ def create_authorization(
 #         uow.commit()
 
 
-def process_auth_code_recieved(
-    cmd: commands.ProcessAuthCodeRecieved,
+def process_grant_recieved(
+    cmd: commands.ProcessGrantRecieved,
     uow: unit_of_work.AbstractUnitOfWork
 ):
     """Обработчик команды Обработать код авторизации
@@ -107,15 +107,16 @@ def process_auth_code_recieved(
         
         if not auth.state.is_active:
             auth.deactivate()
+            uow.commit()
             raise InactiveState("State is inactive")
 
         auth.state.deactivate()
-        grant = model.Grant("authorization_code", cmd.auth_code)
+        grant = model.Grant("authorization_code", cmd.code)
         auth.grants.append(grant)
         uow.commit()
 
 
-def token_recieved(
+def process_token_recieved(
     event: events.TokenRecieved,
     uow: unit_of_work.AbstractUnitOfWork
 ):
@@ -127,28 +128,3 @@ def token_recieved(
         token = model.Token("test_token")
         auth.tokens.append(token)
         uow.commit()
-
-
-def cancel_authorization(
-    cmd: commands.CancelAuthorization,
-    uow: unit_of_work.AbstractUnitOfWork
-):
-    with uow:
-        auth = uow.authorizations.get_by_grant_code(cmd.state_code)
-        
-
-    #     self.is_active = False
-    #     self._deactivate_state()
-    #     self._deactivate_grants()
-    #     self._deactivate_tokens()
-    
-    # def _deactivate_state(self):
-    #     self.state.is_active = False
-    
-    # def _deactivate_grants(self):
-    #     for grant in [grant for grant in self.grants if grant.is_active]:
-    #         grant.is_active = False
-
-    # def _deactivate_tokens(self):
-    #     for token in [token for token in self.tokens if token.is_active]:
-    #         token.is_active = False

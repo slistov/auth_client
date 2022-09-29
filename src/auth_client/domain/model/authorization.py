@@ -36,4 +36,18 @@ class Authorization:
         return next(grant for grant in self.grants if grant.code == code)
     
     def deactivate(self):
-        self.events.append(commands.CancelAuthorization(self.state.code))
+        self.is_active = False
+        self._deactivate_state()
+        self._deactivate_grants()
+        self._deactivate_tokens()
+    
+    def _deactivate_state(self):
+        self.state.deactivate()
+    
+    def _deactivate_grants(self):
+        for grant in [grant for grant in self.grants if grant.is_active]:
+            grant.deactivate()
+
+    def _deactivate_tokens(self):
+        for token in [token for token in self.tokens if token.is_active]:
+            token.deactivate()
