@@ -45,7 +45,7 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 
 
 class TestAuthorization:
-    def test_auth_creation(self):
+    def test_authorization_is_created_and_could_be_found_by_stateCode(self):
         uow = FakeUnitOfWork()
         messagebus.handle(commands.CreateAuthorization("test_state_code"), uow)
         assert uow.authorizations.get_by_state_code("test_state_code") is not None
@@ -60,7 +60,6 @@ class TestProcessGrantRecieved:
         messagebus.handle(commands.ProcessGrantRecieved(auth.state.code,  "authorization_code", "test_code"), uow)
         assert uow.authorizations.get_by_grant_code("test_code") is not None
         assert uow.committed
-
 
     def test_for_existing_authorization_wrong_stateCode_raises_InvalidState_exception(self):
         uow = FakeUnitOfWork()
@@ -80,7 +79,7 @@ class TestProcessGrantRecieved:
             messagebus.handle(commands.ProcessGrantRecieved("test_state_code", "authorization_code", "test_code"), uow)
 
 
-class TestAccessTokenRecieving:
+class TestProcessAccessTokenRecieved:
     def test_for_existing_authorization_by_access_token(self):
         uow = FakeUnitOfWork()
         results = messagebus.handle(commands.CreateAuthorization("test_state_code"), uow)
@@ -99,10 +98,8 @@ class TestAttackHandling:
         auth.state.deactivate()
 
         assert auth.is_active == True
-
         with pytest.raises(handlers.InactiveState, match="State is inactive"):
             messagebus.handle(commands.ProcessGrantRecieved("test_state_code", "authorization_code", "test_code"), uow)
-        
         assert auth.is_active == False
         assert auth.state.is_active == False
 
