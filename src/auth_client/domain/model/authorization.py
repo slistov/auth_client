@@ -35,6 +35,13 @@ class Authorization:
     def get_grant_by_code(self, code: str):
         return next(grant for grant in self.grants if grant.code == code)
     
+    def get_active_grant(self):
+        return next(grant for grant in self.grants if grant.is_active)
+    
+    def get_active_token(self):
+        return next(token for token in self.tokens if token.is_valid)
+
+    
     def deactivate(self):
         self.is_active = False
         self._deactivate_state()

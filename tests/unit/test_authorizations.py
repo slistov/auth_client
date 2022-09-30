@@ -18,3 +18,5 @@ def test_when_authorization_deactivates_it_also_deactivates_its_state_grants_and
     assert not state.is_active 
     assert not grant.is_active
     assert not token.is_active
+
+

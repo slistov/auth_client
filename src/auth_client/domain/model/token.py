@@ -19,3 +19,13 @@ class Token:
 
     def deactivate(self):
         self.is_active = False
+    
+    @property
+    def _expired(self):
+        return self.expires_in < datetime.utcnow()
+
+    @property
+    def is_valid(self):
+        return not(self._expired) and self.is_active
+
+    
