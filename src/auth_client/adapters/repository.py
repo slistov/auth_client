@@ -65,7 +65,7 @@ class SQLAlchemyRepository(AbstractRepository):
         return (
             self.session.query(model.Authorization)
             .join(model.State)
-            .filter(orm.states.code == code)
+            .filter(orm.states.c.code == code)
             .first()
         )
 
@@ -73,7 +73,7 @@ class SQLAlchemyRepository(AbstractRepository):
         return (
             self.session.query(model.Authorization)
             .join(model.Grant)
-            .filter(orm.grants.code == code)
+            .filter(orm.grants.c.code == code)
             .first()
         )
 
@@ -81,7 +81,7 @@ class SQLAlchemyRepository(AbstractRepository):
         return (
             self.session.query(model.Authorization)
             .join(model.Token)
-            .filter(orm.tokens.token == token)
+            .filter(orm.tokens.c.token == token)
             .first()
         )
     

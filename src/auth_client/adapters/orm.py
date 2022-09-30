@@ -61,7 +61,7 @@ def start_mappers():
         model.Authorization, 
         authorizations,
         properties={
-            "states": relationship(states_mapper),
+            "state": relationship(states_mapper, uselist=False),
             "grants": relationship(grants_mapper),
             "tokens": relationship(tokens_mapper)
         }        
