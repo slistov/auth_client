@@ -45,9 +45,10 @@ class ProcessGrantRecieved(Command):
         - "authorization_code" (код авторизации)
         - "refresh_token" (токен обновления)
     """
-    state_code: Optional[str]
+    state_code: str
     type: str
     code: str
+
 
 
 @dataclass

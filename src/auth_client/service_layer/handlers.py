@@ -101,30 +101,35 @@ def process_grant_recieved(
     """Обработчик команды Обработать код авторизации
     """
     with uow:
-        auth = uow.authorizations.get_by_state_code(cmd.state_code)
+        auth = uow.authorizations.get_by_state_code(cmd.state_code)        
         if auth is None or not auth.is_active:
             raise InvalidState("No active authorization found")
-        
-        if not auth.state.is_active:
-            auth.deactivate()
-            uow.commit()
-            raise InactiveState("State is inactive")
 
-        auth.state.deactivate()
-        grant = model.Grant("authorization_code", cmd.code)
+        if cmd.type == "authorization_code" and cmd.state_code:            
+            if not auth.state.is_active:                        # Exception: are we under attack?
+                auth.deactivate()                               # if we are, then invoke authorization
+                uow.commit()
+                raise InactiveState("State is inactive")
+            auth.state.deactivate()
+
+        grant = model.Grant(cmd.type, cmd.code)
         auth.grants.append(grant)
         uow.commit()
 
 
-def process_token_recieved(
-    event: events.TokenRecieved,
-    uow: unit_of_work.AbstractUnitOfWork
-):
-        auth = uow.authorizations.get_by_grant_code(event.grant_code)
-        grant = auth.get_grant_by_code(event.grant_code)
-        if auth is None or not auth.is_active or not grant.is_active:
-            raise InvalidState()
-        grant.deactivate()
-        token = model.Token("test_token")
-        auth.tokens.append(token)
-        uow.commit()
+# def process_token_recieved(
+#     cmd: commands.ProcessTokenRecieved,
+#     uow: unit_of_work.AbstractUnitOfWork
+# ):
+#     with uow:
+#         auth = uow.authorizations.get_by_grant_code(cmd.grant_code)
+#         if auth is None or not auth.is_active:
+#             raise InvalidGrant("No active authorization found")
+        
+#         grant = auth.get_grant_by_code(cmd.grant_code)
+#         if grant and not grant.is_active:
+#             auth.deactivate()
+#         grant.deactivate()
+#         token = model.Token("test_token")
+#         auth.tokens.append(token)
+#         uow.commit()
