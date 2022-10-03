@@ -3,8 +3,8 @@
 Абстракция над хранилищем"""
 
 import abc
-from src.auth_client.adapters import orm
-from src.auth_client.domain import model
+from auth_client.adapters import orm
+from auth_client.domain import model
 
 
 class AbstractRepository(abc.ABC):

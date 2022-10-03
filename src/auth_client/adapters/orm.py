@@ -9,7 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     event
 )
-from src.auth_client.domain import model
+from auth_client.domain import model
 from sqlalchemy.orm import relationship, registry
 
 

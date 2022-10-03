@@ -2,7 +2,7 @@ import pytest
 import requests
 from urllib.parse import urlparse, parse_qsl
 
-from src.auth_client import config
+from auth_client import config
 
 @pytest.mark.usefixtures("postgres_db")
 @pytest.mark.usefixtures("restart_api")

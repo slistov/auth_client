@@ -1,4 +1,4 @@
-from src.auth_client.domain import model
+from auth_client.domain import model
 
 
 def test_when_authorization_deactivates_it_also_deactivates_its_state_grants_and_tokens():

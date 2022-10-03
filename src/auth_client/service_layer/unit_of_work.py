@@ -6,8 +6,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 
-from src.auth_client import config
-from src.auth_client.adapters import repository
+from auth_client import config
+from auth_client.adapters import repository
 
 
 class AbstractUnitOfWork(abc.ABC):
