@@ -1,5 +1,5 @@
-from src.auth_client.service_layer import unit_of_work
-from src.auth_client.domain import model
+from auth_client.service_layer import unit_of_work
+from auth_client.domain import model
 from datetime import datetime
 
 def insert_authorization(session, id, created=datetime.utcnow(), is_active=True):
