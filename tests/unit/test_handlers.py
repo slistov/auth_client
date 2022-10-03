@@ -124,11 +124,15 @@ class TestAttackHandling:
         token = model.Token(access_token="test_token", expires_in=3600)
         auth.tokens.append(token)
 
-        auth.state.deactivate()
-
         assert auth.is_active == True
+        assert auth.state.is_active 
+        assert grant.is_active
+        assert token.is_active
+
+        auth.state.deactivate()
         with pytest.raises(handlers.InactiveState, match="State is inactive"):
             messagebus.handle(commands.ProcessGrantRecieved("test_state_code", "authorization_code", "test_code"), uow)
+
         assert not auth.is_active
         assert not auth.state.is_active 
         assert not grant.is_active
