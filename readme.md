@@ -19,3 +19,10 @@
         получить в ответе 
         5.2 новый токен доступа
         5.3 новый грант - токен обновления
+
+
+
+УСТАНОВКА
+clone
+pip install -r requirements.txt
+pip install -e src

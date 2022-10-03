@@ -2,11 +2,11 @@
 from datetime import date
 from unittest import mock
 import pytest
-from src.auth_client.adapters import repository
-from src.auth_client.domain import commands, events
-from src.auth_client.service_layer import handlers, messagebus, unit_of_work
+from auth_client.adapters import repository
+from auth_client.domain import commands, events
+from auth_client.service_layer import handlers, messagebus, unit_of_work
 
-from src.auth_client.domain import model
+from auth_client.domain import model
 
 class FakeRepository(repository.AbstractRepository):
     def __init__(self, authorizations):
@@ -137,3 +137,4 @@ class TestAttackHandling:
         assert not auth.state.is_active 
         assert not grant.is_active
         assert not token.is_active
+

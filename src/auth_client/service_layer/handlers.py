@@ -4,8 +4,8 @@
 """
 
 from typing import TYPE_CHECKING, Any
-from src.auth_client.domain import model, events, commands
-from src.auth_client import config
+from auth_client.domain import model, events, commands
+from auth_client import config
 
 from . import unit_of_work 
 

@@ -1,10 +1,10 @@
 from fastapi import FastAPI, Response
 
-from src.auth_client.domain import commands
-from src.auth_client.service_layer import unit_of_work, messagebus
+from auth_client.domain import commands
+from auth_client.service_layer import unit_of_work, messagebus
 
-from src.auth_client.adapters import orm
-from src.auth_client import config
+from auth_client.adapters import orm
+from auth_client import config
 
 from urllib.parse import urlencode
 
