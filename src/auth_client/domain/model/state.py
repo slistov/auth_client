@@ -11,6 +11,8 @@ class State:
 
     Модель используется в п.1-2  полного сценария, см. README.md"""
     def __init__(self, code: str = None) -> None:
+        if not code:
+            code = self._generate_state()
         self.code = code
         self.created = datetime.datetime.utcnow()
         self.is_active = True
@@ -18,3 +20,6 @@ class State:
         
     def deactivate(self):
         self.is_active = False
+    
+    def _generate_state(self):
+        return "some_state_code"
