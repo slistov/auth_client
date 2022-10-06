@@ -6,11 +6,11 @@ from auth_client import config
 
 @pytest.mark.usefixtures("postgres_db")
 @pytest.mark.usefixtures("restart_api")
-def test_happy_path_returns_201_and_redirect_uri_line():
+def test_happy_path_returns_200_and_redirect_uri_line():
     client_id, _ = config.get_client_credentials()
 
-    url = config.get_api_url()
-    r = requests.get(f"{url}{config.get_api_authorize_uri()}")
+    url = f"{config.get_api_url()}{config.get_api_authorize_uri()}"
+    r = requests.get(f"{url}")
 
     assert r.status_code == 200
     
