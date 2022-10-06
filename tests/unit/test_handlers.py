@@ -8,6 +8,7 @@ from auth_client.service_layer import handlers, messagebus, unit_of_work
 
 from auth_client.domain import model
 
+
 class FakeRepository(repository.AbstractRepository):
     def __init__(self, authorizations):
         super().__init__()
@@ -101,18 +102,14 @@ class TestAccessToken:
         assert uow.authorizations.get_by_token("test_token") is not None
         assert uow.committed
     
-    def test_request_token_by_grant(self):
+    def test_get_active_token_for_existing_authorization(self):
         uow = FakeUnitOfWork()
         [auth] = messagebus.handle(commands.CreateAuthorization(), uow)
-        messagebus.handle(
-            commands.ProcessGrantRecieved(auth.state.code, "authorization_code", "test_code"), 
-            uow
-        )
-        messagebus.handle(commands.RequestTokenFromOAuth("test_code"), uow)
+        messagebus.handle(commands.ProcessGrantRecieved(auth.state.code, "authorization_code", "test_code"), uow)
+        auth.tokens.append(model.Token("test_token"))
 
         assert auth.get_active_token().access_token == "test_token"
         assert uow.committed
-
 
 
 class TestAttackHandling:
