@@ -4,6 +4,8 @@ from auth_client.service_layer.oauth_service import AbstractOAuthService
 class FakeOAuthService(AbstractOAuthService):
     def __init__(self, service_url) -> None:
         self.service_url = service_url
+        self.endpoint = None
+        self.data = None
     
     def _post(self, endpoint, data):
         self.endpoint = endpoint
@@ -33,3 +35,4 @@ class TestOAuthRequest:
         results = oauth.post(endpoint="/token", data=data)
 
         assert results == {"k1": "v1", "k2": "v2"}
+        

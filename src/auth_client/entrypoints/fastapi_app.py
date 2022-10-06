@@ -26,7 +26,7 @@ def get_oauth_uri(state_code):
 
 @app.get('/api/oauth/authorize')
 def get_oauth_authorize_uri():
-    cmd = commands.CreateState()
+    cmd = commands.CreateAuthorization()
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     results = messagebus.handle(cmd, uow)
     state_code = results.pop(0)
