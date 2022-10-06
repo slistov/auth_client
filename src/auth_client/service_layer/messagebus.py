@@ -81,5 +81,5 @@ EVENT_HANDLERS = {
 COMMAND_HANDLERS = {
     commands.CreateAuthorization: handlers.create_authorization,
     commands.ProcessGrantRecieved: handlers.process_grant_recieved,        
-    # commands.ProcessTokenRecieved: handlers.process_token_recieved,            
+    commands.RequestTokenFromOAuth: handlers.request_token_from_oauth,            
 }  # type: Dict[Type[commands.Command], Callable]

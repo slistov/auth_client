@@ -23,7 +23,8 @@ class ValidateState(Command):
 
 @dataclass
 class CreateAuthorization(Command):
-    state_code: str
+    pass
+    # state_code: str
 
 
 @dataclass
@@ -57,3 +58,9 @@ class ProcessTokenRecieved(Command):
     """
     grant_code: str
     access_token: str
+
+
+@dataclass
+class RequestTokenFromOAuth(Command):
+    """Запросить токен по гранту"""
+    grant_code: str
