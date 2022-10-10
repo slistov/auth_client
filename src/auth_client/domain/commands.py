@@ -11,30 +11,30 @@ class Command:
     pass
 
 
-@dataclass
-class CreateState(Command):
-    pass
+# @dataclass
+# class CreateState(Command):
+#     pass
 
 
-@dataclass
-class ValidateState(Command):
-    code: str
+# @dataclass
+# class ValidateState(Command):
+#     code: str
 
 
 @dataclass
 class CreateAuthorization(Command):
-    pass
+    source_url: str
     # state_code: str
 
 
-@dataclass
-class CancelAuthorization(Command):
-    """Отозвать авторизацию
+# @dataclass
+# class CancelAuthorization(Command):
+#     """Отозвать авторизацию
     
-    Возникает в случаях
-    - пользователь отзывает авторизацию
-    - заподозрена атака (использован неактивный state, token, refresh_token)"""
-    state_code: str
+#     Возникает в случаях
+#     - пользователь отзывает авторизацию
+#     - заподозрена атака (использован неактивный state, token, refresh_token)"""
+#     state_code: str
 
 
 @dataclass
@@ -52,15 +52,15 @@ class ProcessGrantRecieved(Command):
 
 
 
-@dataclass
-class ProcessTokenRecieved(Command):
-    """Обработать полученный токен доступа
-    """
-    grant_code: str
-    access_token: str
+# @dataclass
+# class ProcessTokenRecieved(Command):
+#     """Обработать полученный токен доступа
+#     """
+#     grant_code: str
+#     access_token: str
 
 
 @dataclass
-class RequestTokenFromOAuth(Command):
+class RequestToken(Command):
     """Запросить токен по гранту"""
     grant_code: str

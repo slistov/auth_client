@@ -29,15 +29,6 @@ def get_client_credentials():
         os.environ.get("CLIENT_SECRET", "No CLIENT_SECRET provided")
     )
 
-def get_oauth_callback_URL():
-    base_url = get_api_url()
-    callback_uri = os.environ.get("API_OAUTH_CALLBACK")
-    return f"{base_url}{callback_uri}"
-
-def get_scope():
-    return os.environ.get("SCOPE", "email")
-
-
 # def get_token_default_expires_in():
 #     return config
 
@@ -122,3 +113,12 @@ ALGORITHM = config['ALGORITHM']
 
 def get_api_authorize_uri():
     return AUTHORIZE
+
+def get_oauth_callback_URL():
+    base_url = get_api_url()
+    callback_uri = CALLBACK
+    return f"{base_url}{callback_uri}"
+
+def get_scope():
+    return os.environ.get("SCOPE", "email")
+
