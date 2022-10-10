@@ -79,21 +79,6 @@ def create_authorization(
         return auth
 
 
-# def grant_recieved(
-#     event: events.GrantRecieved,
-#     uow: unit_of_work.AbstractUnitOfWork
-# ):
-#     """Обработчик события Получен грант
-#     """
-#     with uow:
-#         auth = uow.authorizations.get_by__code(event.state_code)
-#         if auth is None or not auth.is_active or not auth.state.is_active:
-#             raise InvalidState()
-#         auth.state.deactivate()
-#         auth.grants.append("authorization_code", event.auth_code)
-#         uow.commit()
-
-
 def process_grant_recieved(
     cmd: commands.ProcessGrantRecieved,
     uow: unit_of_work.AbstractUnitOfWork
@@ -117,20 +102,21 @@ def process_grant_recieved(
         uow.commit()
 
 
-# def request_token_from_oauth(
-#     cmd: commands.ProcessTokenRecieved,
-#     uow: unit_of_work.AbstractUnitOfWork
-# ):
-#     with uow:
-#         auth = uow.authorizations.get_by_grant_code(cmd.grant_code)
-#         if auth is None or not auth.is_active:
-#             raise InvalidGrant("No active authorization found")
+def request_token(
+    cmd: commands.RequestToken,
+    uow: unit_of_work.AbstractUnitOfWork
+):
+    with uow:
+        auth = uow.authorizations.get_by_grant_code(cmd.grant_code)
+        if auth is None or not auth.is_active:
+            raise InvalidGrant("No active authorization found")
         
-#         grant = auth.get_grant_by_code(cmd.grant_code)
-#         if grant and not grant.is_active:
-#             auth.deactivate()
-#         grant.deactivate()
-#         token = model.Token("test_token")
-#         auth.tokens.append(token)
-#         uow.commit()
+        grant = auth.get_active_grant()
+        if not grant:
+            raise InvalidGrant("No grant found for token requesting")
+        grant.deactivate()
+        token = "request_token"
+        auth.tokens.append(token)
+        uow.commit()
+        return token
         
