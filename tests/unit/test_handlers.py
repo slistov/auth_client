@@ -4,10 +4,10 @@ from unittest import mock
 import pytest
 from auth_client.adapters import repository
 from auth_client.domain import commands, events
-from auth_client.service_layer import handlers, messagebus, unit_of_work
+from auth_client.service_layer import handlers, messagebus, unit_of_work, oauth_requester, oauth_service
 
 from auth_client.domain import model
-
+from ..conftest import FakeOAuthService
 
 class FakeRepository(repository.AbstractRepository):
     def __init__(self, authorizations):
@@ -43,6 +43,9 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 
     def rollback(self):
         pass
+
+    def _get_token_requester(self):
+        return oauth_requester.OAuthRequester(FakeOAuthService("http://fake-oauth.service.com/api"))
 
 
 class TestAuthorization:
@@ -143,14 +146,31 @@ class TestTokenRequest:
         uow = FakeUnitOfWork()
         auth = model.Authorization(grants=[model.Grant("authorization_code", "test_code")])
         uow.authorizations.add(auth)
-        [token] = messagebus.handle(commands.RequestToken("test_code"), uow)
-        assert token is not None
+        [access_token] = messagebus.handle(commands.RequestToken("test_code"), uow)
+        assert access_token is not None
 
     def test_several_tokenRequests_return_different_tokens(self):
         uow = FakeUnitOfWork()
-        auth = model.Authorization(grants=[model.Grant("authorization_code", "test_code")])
+        auth = model.Authorization(
+            grants=[
+                model.Grant("authorization_code", "test_code1"),
+                model.Grant("refresh_token", "test_code2"),                
+            ]
+        )
         uow.authorizations.add(auth)
-        [token1] = messagebus.handle(commands.RequestToken("test_code1"), uow)
-        [token2] = messagebus.handle(commands.RequestToken("test_code2"), uow)
-        assert not token1 == token2
+        [access_token1] = messagebus.handle(commands.RequestToken("test_code1"), uow)
+        [access_token2] = messagebus.handle(commands.RequestToken("test_code2"), uow)
+        assert not access_token1 == access_token2
 
+    def test_tokenRequest_deactivates_old_token_and_old_grant(self):
+        uow = FakeUnitOfWork()
+        grant = model.Grant("refresh_token", "test_code")
+        token = model.Token("test_access_token")
+        auth = model.Authorization(grants=[grant], tokens=[token])
+        uow.authorizations.add(auth)
+
+        assert grant.is_active
+        assert token.is_active
+        [access_token] = messagebus.handle(commands.RequestToken("test_code"), uow)        
+        assert not grant.is_active
+        assert not token.is_active
