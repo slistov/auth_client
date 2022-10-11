@@ -21,8 +21,8 @@ class AbstractOAuthService(abc.ABC):
         return self.params
 
 class OAuthService(AbstractOAuthService):
-    async def _post(self, endpoint, data):
-        async with aiohttp.ClientSession() as session:
+    def _post(self, endpoint, data):
+        with aiohttp.ClientSession() as session:
             self._url = f"{self.service_url}{endpoint}"
             response = session.post(
                 url=self._url,
