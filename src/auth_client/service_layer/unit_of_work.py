@@ -10,6 +10,7 @@ from auth_client import config
 from auth_client.adapters import repository
 
 
+
 class AbstractUnitOfWork(abc.ABC):
     authorizations: repository.AbstractRepository
 
@@ -26,6 +27,14 @@ class AbstractUnitOfWork(abc.ABC):
         for obj in self.authorizations.seen:
             while obj.events:
                 yield obj.events.pop(0)
+    
+    
+    def get_token_requester(self):
+        return self._get_token_requester()
+    
+    @abc.abstractmethod
+    def _get_token_requester(self):
+        raise NotImplementedError
 
     @abc.abstractmethod
     def _commit(self):
@@ -62,3 +71,6 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def rollback(self):
         self.session.rollback()
+
+    def _get_token_requester(self):
+        return 

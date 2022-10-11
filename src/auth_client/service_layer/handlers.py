@@ -111,12 +111,22 @@ def request_token(
         if auth is None or not auth.is_active:
             raise InvalidGrant("No active authorization found")
         
-        grant = auth.get_active_grant()
-        if not grant:
+        old_grant = auth.get_grant_by_code(cmd.grant_code)
+        if not old_grant or not old_grant.is_active:
             raise InvalidGrant("No grant found for token requesting")
-        grant.deactivate()
-        token = "request_token"
-        auth.tokens.append(token)
+        old_grant.deactivate()
+
+        old_token = auth.get_active_token()
+        if old_token:
+            old_token.deactivate()
+
+        token_requester = uow.get_token_requester()
+        data = token_requester.prepare_tokenRequest_data(old_grant)
+        token_requester.post("/token", data)
+
+        new_token = token_requester.get_token()
+        new_grant = token_requester.get_grant()
+        auth.tokens.append(new_token)
+        auth.grants.append(new_grant)        
         uow.commit()
-        return token
         

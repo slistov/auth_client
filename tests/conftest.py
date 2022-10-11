@@ -9,6 +9,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
+from auth_client.service_layer.oauth_service import AbstractOAuthService
 from auth_client.adapters.orm import mapper_registry, start_mappers
 from auth_client import config
 
@@ -80,3 +81,48 @@ def restart_api():
     (Path(__file__).parent / "../src/auth_client/entrypoints/fastapi_app.py").touch()
     time.sleep(0.5)
     wait_for_webapp_to_come_up()
+
+
+
+class FakeOAuthService(AbstractOAuthService):
+    """Фейковый сервис авторизации для тестирования
+    
+    Посылаем ему запросы, он должен что-нибудь ответить"""
+    def __init__(self, service_url) -> None:
+        self.service_url = service_url
+        self.endpoint = None
+        self.data = None
+    
+    def _post(self, endpoint, data):
+        self.endpoint = endpoint
+        self.data = data
+        time.sleep(0.5)
+        # к токену добавить код гранта, чтобы токены отличать друг от друга
+        # либо code, либо refresh_token - что есть, то и добавить
+        return {
+            "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}", 
+            "refresh_token": "test_refresh_token"
+        }
+    
+    @property
+    def _url(self):
+        return f"{self.service_url}{self.endpoint}"
+
+# @pytest.fixture
+# def fake_oauth_service():
+#     return FakeOAuthService()
+
+class FakeTokenRequester():
+    def get_token(self):
+        return "fake_token"
+
+    def get_grant(self):
+        return "fake_grant"
+
+    def get_grant_and_token(self):
+        return self.get_grant(), self.get_token()
+
+
+@pytest.fixture
+def fake_token_requester():
+    return FakeTokenRequester()
