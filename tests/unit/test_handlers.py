@@ -143,6 +143,7 @@ class TestAttackHandling:
 
 class TestTokenRequest:
     def test_tokenRequester_runs_token_request(self):
+        """Убедиться, что при запросе токена что-то приходит в ответ"""
         uow = FakeUnitOfWork()
         auth = model.Authorization(grants=[model.Grant("authorization_code", "test_code")])
         uow.authorizations.add(auth)
@@ -150,6 +151,9 @@ class TestTokenRequest:
         assert access_token is not None
 
     def test_several_tokenRequests_return_different_tokens(self):
+        """Проверить, что при каждом новом запросе токена, приходит другой токен
+        
+        То есть нет одинаковых токенов"""
         uow = FakeUnitOfWork()
         auth = model.Authorization(
             grants=[
@@ -163,6 +167,8 @@ class TestTokenRequest:
         assert not access_token1 == access_token2
 
     def test_tokenRequest_deactivates_old_token_and_old_grant(self):
+        """Проверить, что после запроса нового токена и гранта (токена обновления),
+        старые токен и грант деактивированы"""
         uow = FakeUnitOfWork()
         grant = model.Grant("refresh_token", "test_code")
         token = model.Token("test_access_token")
