@@ -13,7 +13,7 @@ class Command:
 
 # @dataclass
 # class CreateState(Command):
-#     pass
+#     source_url: str
 
 
 # @dataclass
@@ -23,7 +23,7 @@ class Command:
 
 @dataclass
 class CreateAuthorization(Command):
-    source_url: str
+    source_url: str    
     # state_code: str
 
 

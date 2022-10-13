@@ -67,16 +67,28 @@ class InactiveGrant(GrantError):
         super().__init__(description)
 
 
+# def create_state(
+#     cmd: commands.CreateState,
+#     uow: unit_of_work.AbstractUnitOfWork
+# ) -> str:
+#     with uow:
+#         state = model.State()
+#         auth = model.Authorization(state=state)
+#         uow.authorizations.add(auth)        
+#         uow.commit()
+#         return state
+
+
 def create_authorization(
     cmd: commands.CreateAuthorization,
     uow: unit_of_work.AbstractUnitOfWork
-) -> model.Authorization:
+) -> str:
     with uow:
         state = model.State()
         auth = model.Authorization(state=state)
         uow.authorizations.add(auth)
         uow.commit()
-        return auth
+        return state.code
 
 
 def process_grant_recieved(

@@ -79,6 +79,7 @@ EVENT_HANDLERS = {
 
 # commands Dict
 COMMAND_HANDLERS = {
+    # commands.CreateState: handlers.create_state,    
     commands.CreateAuthorization: handlers.create_authorization,
     commands.ProcessGrantRecieved: handlers.process_grant_recieved,        
     commands.RequestToken: handlers.request_token,            

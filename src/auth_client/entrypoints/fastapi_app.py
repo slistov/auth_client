@@ -38,7 +38,7 @@ async def get_oauth_authorize_uri(params: schemas.callback_query = Depends()):
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     actions_todo = [
         commands.ProcessGrantRecieved(params.state, "authorization_code", params.code),
-        # commands.RequestToken()
+        commands.RequestToken(params.code)
     ]
     for msg in actions_todo:
         messagebus.handle(msg, uow)
