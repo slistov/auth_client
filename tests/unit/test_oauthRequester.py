@@ -16,8 +16,9 @@ class TestOAuthRequest:
         fake_oauth_service = FakeOAuthService("http://fake.oauth.service/api")
         oauth = OAuthRequester(fake_oauth_service)
         
-        data = {"param1": "value1", "param2": "value2"}
+        data = {"code": "test_code", "param2": "value2"}
         results = oauth.post(endpoint="/token", data=data)
 
-        assert results == {"k1": "v1", "k2": "v2"}
+        assert results == {'access_token': 'test_access_token_for_grant_test_code', 'refresh_token': 'test_refresh_token'}
+        
         

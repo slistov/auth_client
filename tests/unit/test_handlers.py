@@ -147,8 +147,9 @@ class TestTokenRequest:
         uow = FakeUnitOfWork()
         auth = model.Authorization(grants=[model.Grant("authorization_code", "test_code")])
         uow.authorizations.add(auth)
-        [access_token] = messagebus.handle(commands.RequestToken("test_code"), uow)
-        assert access_token is not None
+        messagebus.handle(commands.RequestToken("test_code"), uow)
+        token = auth.get_active_token()
+        assert token is not None
 
     def test_several_tokenRequests_return_different_tokens(self):
         """Проверить, что при каждом новом запросе токена, приходит другой токен
@@ -162,9 +163,9 @@ class TestTokenRequest:
             ]
         )
         uow.authorizations.add(auth)
-        [access_token1] = messagebus.handle(commands.RequestToken("test_code1"), uow)
-        [access_token2] = messagebus.handle(commands.RequestToken("test_code2"), uow)
-        assert not access_token1 == access_token2
+        [token1] = messagebus.handle(commands.RequestToken("test_code1"), uow)
+        [token2] = messagebus.handle(commands.RequestToken("test_code2"), uow)
+        assert not token1.access_token == token2.access_token
 
     def test_tokenRequest_deactivates_old_token_and_old_grant(self):
         """Проверить, что после запроса нового токена и гранта (токена обновления),

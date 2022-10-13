@@ -39,7 +39,10 @@ class Authorization:
         return next(grant for grant in self.grants if grant.is_active)
     
     def get_active_token(self):
-        return next(token for token in self.tokens if token.is_valid)
+        try:
+            return next(token for token in self.tokens if token.is_valid)
+        except:
+            return None
 
     
     def deactivate(self):
