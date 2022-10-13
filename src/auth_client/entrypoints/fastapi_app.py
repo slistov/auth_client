@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Response
+from fastapi import FastAPI, Response, Query, Depends
 from urllib.parse import urlencode
 
 from auth_client.domain import commands
@@ -27,14 +27,14 @@ def get_oauth_uri(state_code):
 
 @app.get('/api/oauth/authorize')
 async def get_oauth_authorize_uri():
+    uow = unit_of_work.SqlAlchemyUnitOfWork()    
     cmd = commands.CreateAuthorization("origin")
-    uow = unit_of_work.SqlAlchemyUnitOfWork()
     [state_code] = messagebus.handle(cmd, uow)
     return get_oauth_uri(state_code)
 
 
 @app.get('/api/oauth/callback')
-async def get_oauth_authorize_uri(params: schemas.callback_query):
+async def get_oauth_authorize_uri(params: schemas.callback_query = Depends()):
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     actions_todo = [
         commands.ProcessGrantRecieved(params.state, "authorization_code", params.code),
