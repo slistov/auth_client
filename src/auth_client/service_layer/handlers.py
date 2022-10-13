@@ -129,4 +129,4 @@ def request_token(
         auth.tokens.append(new_token)
         auth.grants.append(new_grant)        
         uow.commit()
-        
+        return new_token
