@@ -7,6 +7,7 @@ from auth_client import config
 
 from src.auth_client.service_layer import messagebus
 from src.auth_client.domain import commands
+from src.auth_client.service_layer.handlers import InvalidState
 
 
 # @pytest.mark.usefixtures("postgres_db")
@@ -37,9 +38,10 @@ def test_happy_path_returns_200_and_redirect_uri_line():
 @pytest.mark.usefixtures("restart_api")
 def test_unhappy_path_callback_raises_403_if_state_not_found():
     callback_url = config.get_oauth_callback_URL()
-    query_params = urlencode({"code": "test_code", "stat": "test_state"})
+    query_params = urlencode({"code": "test_code", "state": "__test_state"})
     url = f"{callback_url}?{query_params}"
     r = requests.get(url)
+
     assert r.status_code == 403
     assert r.text == '{"detail":{"error":"state_error","description":"No active authorization found"}}'
 
