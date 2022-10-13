@@ -1,8 +1,10 @@
 from . import oauth_service
 from ..config import get_client_credentials
 from .handlers import InvalidGrant
+from ..domain import model
 
 class OAuthRequester():
+    """Отправить запрос на сервис и распарсить ответ"""
     def __init__(self, oauth: oauth_service.AbstractOAuthService) -> None:
         self.oauth_service = oauth
         self.oauth_response = {}
@@ -12,12 +14,16 @@ class OAuthRequester():
         return self.oauth_response
     
     def get_token(self):
-        access_token = self.oauth_response.get("access_token", None)
-        return access_token
+        return model.Token(self._get_token_str())
     
     def get_grant(self):
-        code = self.oauth_response.get("refresh_token", None)
-        return code
+        return model.Grant("refresh_token", self._get_grant_code())
+
+    def _get_token_str(self):
+        return self.oauth_response.get("access_token", None)
+    
+    def _get_grant_code(self):
+        return self.oauth_response.get("refresh_token", None)
 
     
     @classmethod
