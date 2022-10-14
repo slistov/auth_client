@@ -1,10 +1,8 @@
 # pylint: disable=no-self-use
-from datetime import date
-from unittest import mock
 import pytest
 from auth_client.adapters import repository
-from auth_client.domain import commands, events
-from auth_client.service_layer import handlers, messagebus, unit_of_work, oauth_requester, oauth_service
+from auth_client.domain import commands
+from auth_client.service_layer import handlers, messagebus, unit_of_work, oauth_requester, exceptions
 
 from auth_client.domain import model
 from ..conftest import FakeOAuthService
@@ -94,7 +92,7 @@ class TestGrant:
         uow = FakeUnitOfWork()
         [auth] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
 
-        with pytest.raises(handlers.InvalidState, match="No active authorization found"):
+        with pytest.raises(exceptions.InvalidState, match="No active authorization found"):
             messagebus.handle(commands.ProcessGrantRecieved("wrong_state_code", "authorization_code", "test_code"), uow)
 
     def test_process_grant_with_inactive_stateCode_raises_INACTIVEState_exception(self):
@@ -103,7 +101,7 @@ class TestGrant:
         auth = uow.authorizations.get_by_state_code(state_code)
         auth.state.deactivate()
 
-        with pytest.raises(handlers.InactiveState, match="State is inactive"):
+        with pytest.raises(exceptions.InactiveState, match="State is inactive"):
             messagebus.handle(commands.ProcessGrantRecieved(auth.state.code, "authorization_code", "test_code"), uow)
 
 
@@ -146,7 +144,7 @@ class TestAttackHandling:
         assert token.is_active
 
         auth.state.deactivate()
-        with pytest.raises(handlers.InactiveState, match="State is inactive"):
+        with pytest.raises(exceptions.InactiveState, match="State is inactive"):
             messagebus.handle(commands.ProcessGrantRecieved(auth.state.code, "authorization_code", "test_code"), uow)
 
         assert not auth.is_active

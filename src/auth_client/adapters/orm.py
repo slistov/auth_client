@@ -36,7 +36,8 @@ states = Table(
 grants = Table(
     'grants', mapper_registry.metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
-    Column('auth_id', ForeignKey("authorizations.id")),    
+    Column('auth_id', ForeignKey("authorizations.id")),   
+    Column('grant_type', String),     
     Column('code', String),
     Column('created', DateTime),
     Column('is_active', Boolean),
