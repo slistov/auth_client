@@ -1,5 +1,6 @@
 import abc
 import aiohttp
+import requests
 
 class AbstractOAuthService(abc.ABC):
     def __init__(self, service_url):
@@ -22,11 +23,21 @@ class AbstractOAuthService(abc.ABC):
 
 class OAuthService(AbstractOAuthService):
     def _post(self, endpoint, data):
-        with aiohttp.ClientSession() as session:
+        with requests.Session() as session:
             self._url = f"{self.service_url}{endpoint}"
             response = session.post(
                 url=self._url,
                 data=data
             )
-            return response
+            return response.json()
+
+# class OAuthService(AbstractOAuthService):
+#     async def _post(self, endpoint, data):
+#         async with aiohttp.ClientSession() as session:
+#             self._url = f"{self.service_url}{endpoint}"
+#             response = session.post(
+#                 url=self._url,
+#                 data=data
+#             )
+#             return response.json()
     

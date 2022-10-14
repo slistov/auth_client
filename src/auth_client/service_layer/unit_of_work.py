@@ -8,6 +8,8 @@ from sqlalchemy.orm.session import Session
 
 from auth_client import config
 from auth_client.adapters import repository
+from auth_client.service_layer import oauth_requester 
+from auth_client.service_layer import oauth_service
 
 
 
@@ -72,5 +74,6 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def rollback(self):
         self.session.rollback()
 
-    def _get_token_requester(self):
-        return 
+    def _get_token_requester(self) -> oauth_requester.OAuthRequester:
+        oauth = oauth_service.OAuthService(config.get_oauth_host())
+        return oauth_requester.OAuthRequester(oauth)

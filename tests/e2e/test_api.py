@@ -5,11 +5,6 @@ from urllib.parse import urlencode
 
 from auth_client import config
 
-from src.auth_client.service_layer import messagebus
-from src.auth_client.domain import commands
-from src.auth_client.service_layer.handlers import InvalidState
-
-
 # @pytest.mark.usefixtures("postgres_db")
 @pytest.mark.usefixtures("in_memory_db")
 @pytest.mark.usefixtures("restart_api")
