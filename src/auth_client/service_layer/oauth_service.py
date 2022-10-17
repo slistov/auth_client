@@ -29,7 +29,7 @@ class OAuthService(AbstractOAuthService):
                 url=self._url,
                 data=data
             )
-            return response.json()
+            return response
 
 # class OAuthService(AbstractOAuthService):
 #     async def _post(self, endpoint, data):
