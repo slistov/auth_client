@@ -23,6 +23,6 @@
 
 
 УСТАНОВКА
-clone
-pip install -r requirements.txt
-pip install -e src
+- clone
+- pip install -r requirements.txt
+- pip install -e src
