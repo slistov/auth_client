@@ -7,7 +7,7 @@ from auth_client.domain import model, commands
 
 from .unit_of_work import AbstractUnitOfWork
 from . import exceptions
-
+from .. import config
 
 
 # def create_state(
@@ -77,8 +77,8 @@ def request_token(
 
         token_requester = uow.get_token_requester()
         data = token_requester.prepare_tokenRequest_data(old_grant)
-        token_requester.post("/token", data)
-
+        token_requester.post(config.get_oauth_token_endpoint_uri(), data)
+    
         new_token = token_requester.get_token()
         new_grant = token_requester.get_grant()
         auth.tokens.append(new_token)
