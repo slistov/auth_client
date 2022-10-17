@@ -20,7 +20,7 @@ def get_api_url():
     return f"{host}"
 
 def get_oauth_host():
-    host = os.environ.get("OAUTH_HOST", "localhost:8000")    
+    host = os.environ.get("OAUTH_HOST", "http://localhost:8000")    
     return f"{host}"
 
 def get_client_credentials():
@@ -65,7 +65,10 @@ _URL = os.getenv('OAUTH_URL')
 _OAUTH_ENDPOINTS = _OAUTH_CONF['ENDPOINTS']
 
 OAUTH_AUTHORIZE = f"{_URL}{_OAUTH_ENDPOINTS['AUTHORIZE']}"
-OAUTH_TOKEN = f"{_URL}{_OAUTH_ENDPOINTS['TOKEN']}"
+
+#OAUTH_TOKEN = f"{_URL}{_OAUTH_ENDPOINTS['TOKEN']}"
+OAUTH_TOKEN_ENDPOINT = _OAUTH_ENDPOINTS['TOKEN']
+
 OAUTH_TOKEN_INFO = f"{_URL}{_OAUTH_ENDPOINTS['TOKEN_INFO']}"
 OAUTH_USER_INFO = f"{_URL}{_OAUTH_ENDPOINTS['USER_INFO']}"
 
@@ -118,6 +121,9 @@ def get_oauth_callback_URL():
     base_url = get_api_url()
     callback_uri = CALLBACK
     return f"{base_url}{callback_uri}"
+
+def get_oauth_token_endpoint_uri():
+    return OAUTH_TOKEN_ENDPOINT
 
 def get_scope():
     return os.environ.get("SCOPE", "email")
