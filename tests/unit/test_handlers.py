@@ -193,3 +193,8 @@ class TestTokenRequest:
         [access_token] = messagebus.handle(commands.RequestToken("test_code"), uow)        
         assert not grant.is_active
         assert not token.is_active
+
+
+class TestDesks:
+    def test_desk_creation():
+        
