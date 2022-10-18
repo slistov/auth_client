@@ -5,6 +5,7 @@ from sqlalchemy import (
     Integer, 
     String, 
     DateTime, 
+    Interval,
     Boolean,
     ForeignKey,
     event
@@ -49,7 +50,7 @@ tokens = Table(
     Column('auth_id', ForeignKey("authorizations.id")),
     Column('access_token', String),
     Column('created', DateTime),
-    Column('expires_in', DateTime),
+    Column('expires_in', Interval),
     Column('is_active', Boolean),
 )
 
