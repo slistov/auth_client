@@ -1,4 +1,4 @@
-from auth_client.service_layer.oauth_requester import OAuthRequester
+from oauth_client_lib.service_layer.oauth_requester import OAuthRequester
 from ..conftest import FakeOAuthService
 
 class TestOAuthRequest:

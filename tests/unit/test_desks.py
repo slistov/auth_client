@@ -1,4 +1,4 @@
-from auth_client.domain import model
+from oauth_client_lib.domain import model
 
 def test_desk():
     desk = model.Desk("Desk", {'struct': 'test struct'})

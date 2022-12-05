@@ -1,1 +1,1 @@
-auth_client
+oauth_client_lib
