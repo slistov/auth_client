@@ -3,7 +3,7 @@ import requests
 from urllib.parse import urlparse, parse_qsl
 from urllib.parse import urlencode
 
-from auth_client import config
+from oauth_client_lib import config
 
 # @pytest.mark.usefixtures("postgres_db")
 @pytest.mark.usefixtures("in_memory_db")

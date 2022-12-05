@@ -1,4 +1,4 @@
-from auth_client.domain import model
+from oauth_client_lib.domain import model
 
 def create_auth_data():
     state = model.State("test_state")

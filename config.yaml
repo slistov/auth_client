@@ -1,7 +1,7 @@
 # # BEGIN .env example
 # WEB_PORT=9000
 # DB_PORT=5432
-# DB_URI=postgresql://postgres:123456@localhost:${DB_PORT}/auth_client
+# DB_URI=postgresql://postgres:123456@localhost:${DB_PORT}/oauth_client_lib
 
 # CLIENT_ID=2325f6f2-6e5d-4b85-9be4-fb753480d971
 # CLIENT_SECRET=CjndHUMMJVGJfVExOSSsZu6fVsIjzGlzs6JpGFE8HW3
@@ -133,7 +133,7 @@ OAUTH:
 #############################################
 #                LOGGING                    #
 #############################################
-ERROR_LOG_FILENAME: "auth_client.log"
+ERROR_LOG_FILENAME: "oauth_client_lib.log"
 
 
 #############################################
