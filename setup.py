@@ -12,7 +12,8 @@ setup(
     long_description=read_me_description,
     long_description_content_type="text/markdown",
     url="https://github.com/slistov/oauth_client_lib.git",
-    packages=['src/oauth_client_lib'],
+    package_dir={'': 'src'},
+    packages=['oauth_client_lib'],
     install_requires=[
         'pytest',
         'sqlalchemy',
