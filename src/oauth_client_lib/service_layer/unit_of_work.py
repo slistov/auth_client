@@ -6,11 +6,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 
-from auth_client import config
-from auth_client.adapters import repository
-from auth_client.service_layer import oauth_requester 
-from auth_client.service_layer import oauth_service
-
+from oauth_client_lib import config
+from oauth_client_lib.adapters import repository
+from oauth_client_lib.service_layer import oauth_requester
+from oauth_client_lib.service_layer import oauth_service
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -29,11 +28,10 @@ class AbstractUnitOfWork(abc.ABC):
         for obj in self.authorizations.seen:
             while obj.events:
                 yield obj.events.pop(0)
-    
-    
+
     def get_token_requester(self):
         return self._get_token_requester()
-    
+
     @abc.abstractmethod
     def _get_token_requester(self):
         raise NotImplementedError

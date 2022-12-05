@@ -8,7 +8,7 @@
 from __future__ import annotations
 import logging
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
-from auth_client.domain import commands, events
+from oauth_client_lib.domain import commands, events
 from . import handlers
 
 if TYPE_CHECKING:
@@ -24,8 +24,10 @@ def handle(
     uow: unit_of_work.AbstractUnitOfWork,
 ):
     """Обработать очередь сообщений
-    
-    Запускает обработчики для каждого сообщения из очереди в зависимости от типа сообщения"""
+
+    Запускает обработчики для каждого сообщения из очереди
+    в зависимости от типа сообщения
+    """
     results = []
     queue = [message]
     while queue:
@@ -72,6 +74,7 @@ def handle_command(
         logger.exception("Exception handling command %s", command)
         raise
 
+
 # events Dict
 EVENT_HANDLERS = {
     # events.TokenRecieved: [handlers.token_recieved],
@@ -79,8 +82,8 @@ EVENT_HANDLERS = {
 
 # commands Dict
 COMMAND_HANDLERS = {
-    # commands.CreateState: handlers.create_state,    
+    # commands.CreateState: handlers.create_state,
     commands.CreateAuthorization: handlers.create_authorization,
-    commands.ProcessGrantRecieved: handlers.process_grant_recieved,        
-    commands.RequestToken: handlers.request_token,            
+    commands.ProcessGrantRecieved: handlers.process_grant_recieved,
+    commands.RequestToken: handlers.request_token,
 }  # type: Dict[Type[commands.Command], Callable]
