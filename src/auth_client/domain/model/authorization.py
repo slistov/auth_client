@@ -12,17 +12,17 @@ from typing import List
 
 from .state import State
 from .grant import Grant
-from .token import Token
+from .access_token import Token
 from .user import User
-from .. import commands
+
 
 class Authorization:
     def __init__(
-        self, 
-        state: State = State(), 
-        grants: List[Grant] = None, 
-        tokens: List[Token] = None, 
-        user: User = None, 
+        self,
+        state: State = State(),
+        grants: List[Grant] = None,
+        tokens: List[Token] = None,
+        user: User = None,
         is_active: bool = True
     ):
         self.state = state
@@ -31,29 +31,28 @@ class Authorization:
         self.user = user if user else None
         self.is_active = is_active
         self.events = []
-    
+
     def get_grant_by_code(self, code: str):
         return next(grant for grant in self.grants if grant.code == code)
-    
+
     def get_active_grant(self):
         return next(grant for grant in self.grants if grant.is_active)
-    
+
     def get_active_token(self):
         try:
             return next(token for token in self.tokens if token.is_valid)
-        except:
+        except Exception:
             return None
 
-    
     def deactivate(self):
         self.is_active = False
         self._deactivate_state()
         self._deactivate_grants()
         self._deactivate_tokens()
-    
+
     def _deactivate_state(self):
         self.state.deactivate()
-    
+
     def _deactivate_grants(self):
         for grant in [grant for grant in self.grants if grant.is_active]:
             grant.deactivate()

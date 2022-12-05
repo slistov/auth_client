@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 class User:
     def __init__(self, email: str, username: str):
         self.email = email

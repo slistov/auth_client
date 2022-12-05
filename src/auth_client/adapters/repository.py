@@ -11,11 +11,11 @@ class AbstractRepository(abc.ABC):
     """Абстрактный репозиторий
     """
     def __init__(self):
-        self.seen = set()  # type: Set[model.Product]
+        self.seen = set()
 
     def add(self, auth: model.Authorization) -> model.Authorization:
         self._add(auth)
-        self.seen.add(auth)        
+        self.seen.add(auth)
 
     def get_by_state_code(self, state_code) -> model.Authorization:
         auth = self._get_by_state_code(state_code)
@@ -34,7 +34,6 @@ class AbstractRepository(abc.ABC):
         if auth:
             self.seen.add(auth)
         return auth
-
 
     @abc.abstractmethod
     def _add(self, auth: model.Authorization):
@@ -55,7 +54,7 @@ class AbstractRepository(abc.ABC):
 
 class SQLAlchemyRepository(AbstractRepository):
     def __init__(self, session):
-        super().__init__()        
+        super().__init__()
         self.session = session
 
     def _add(self, auth: model.Authorization):
@@ -84,33 +83,9 @@ class SQLAlchemyRepository(AbstractRepository):
             .filter(orm.tokens.c.token == token)
             .first()
         )
-    
+
     def cancel_authorization(self):
         return (
             self.session.query(model.Authorization).
             join(model.State)
         )
-    # def _get_active__by_state_code(self, code) -> model.Authorization:
-    #     return (
-    #         self.session.query(model.Authorization)
-    #         .join(model.State)
-    #         .filter(orm.states.code == code, orm.states.is_active, orm.authorizations.is_active)
-    #         .first()
-    #     )
-
-    # def _get_active_by_grant_code(self, code) -> model.Authorization:
-    #     return (
-    #         self.session.query(model.Authorization)
-    #         .join(model.Grant)
-    #         .filter(orm.grants.code == code, orm.grants.is_active, orm.authorizations.is_active)
-    #         .first()
-    #     )
-
-    # def _get_active_by_token(self, token) -> model.Authorization:
-    #     return (
-    #         self.session.query(model.Authorization)
-    #         .join(model.Token)
-    #         .filter(orm.tokens.token == token, orm.tokens.is_active, orm.authorizations.is_active)
-    #         .first()
-    #     )
-
