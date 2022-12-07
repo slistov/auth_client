@@ -18,7 +18,6 @@ setup(
         'pytest',
         'sqlalchemy',
         'fastapi[all]==0.82.0',
-        # 'mypy==0.971',
         'requests==2.28.1',
         'alembic',
         'psycopg2==2.9.3',
