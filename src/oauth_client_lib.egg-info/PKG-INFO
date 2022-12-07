@@ -1,3 +1,17 @@
+Metadata-Version: 2.1
+Name: oauth-client-lib
+Version: 0.1.1
+Summary: OAuth2 client library
+Home-page: https://github.com/slistov/oauth_client_lib.git
+Author: Sergey Listov
+Author-email: slistov@mail.ru
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
 
 # Клиент сервиса авторизации
 
@@ -24,14 +38,10 @@
     - новый грант - токен обновления
 
 
-### Установка
 
+### Установка
 - clone
 - pip install -r requirements.txt
 - pip install -e src
 
-
-# Oauth2.0 client
-
-The app gets token from oauth service according to oauth2.0 specs.
 

@@ -1,27 +1,49 @@
 # pylint: disable=no-self-use
-from datetime import date
-from unittest import mock
 import pytest
-from src.auth_client.adapters import repository
-from src.auth_client.domain import commands, events
-from src.auth_client.service_layer import handlers, messagebus, unit_of_work
+from oauth_client_lib.adapters import repository
+from oauth_client_lib.domain import commands
+from oauth_client_lib.service_layer import (
+    messagebus,
+    unit_of_work,
+    oauth_requester,
+    exceptions
+)
+
+from oauth_client_lib.domain import model
+from ..conftest import FakeOAuthService
 
 
 class FakeRepository(repository.AbstractRepository):
-    def __init__(self, states):
+    def __init__(self, authorizations):
         super().__init__()
-        self._states = set(states)
+        self._authorizations = set(authorizations)
 
-    def _add(self, state):
-        self._states.add(state)
+    def _add(self, authorization):
+        self._authorizations.add(authorization)
 
-    def _get(self, code):
-        return next((p for p in self._states if p.code == code), None)
+    def _get_by_state_code(self, code) -> model.Authorization:
+        return next(
+            (a for a in self._authorizations if code == a.state.code), None
+        )
+
+    def _get_by_grant_code(self, code):
+        return next(
+            (a for a in self._authorizations
+                for grant in a.grants if code == grant.code),
+            None
+        )
+
+    def _get_by_token(self, access_token) -> model.Authorization:
+        return next(
+            (a for a in self._authorizations
+                for token in a.tokens if access_token == token.access_token),
+            None
+        )
 
 
 class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
     def __init__(self):
-        self.states = FakeRepository([])
+        self.authorizations = FakeRepository([])
         self.committed = False
 
     def _commit(self):
@@ -30,92 +52,188 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
     def rollback(self):
         pass
 
+    def _get_token_requester(self):
+        return oauth_requester.OAuthRequester(
+            FakeOAuthService("http://fake-oauth.service.com/api")
+        )
 
-class TestState:
-    def test_create_state(self):
+
+class TestAuthorization:
+    def test_authorization_is_created_and_could_be_found_by_stateCode(self):
+        """Содать авторизацию
+        После создания авторизации, её можно получить по state-коду"""
         uow = FakeUnitOfWork()
-        messagebus.handle(commands.CreateState(), uow)
-        assert uow.states.add() is not None
+        [state_code] = messagebus.handle(
+            commands.CreateAuthorization("source_url"),
+            uow
+        )
+        assert uow.authorizations.get_by_state_code(state_code) is not None
         assert uow.committed
 
-    def test_get_state(self):
+    def test_state_becomes_inactive_after_AuthCodeGrant_processed(self):
+        """Деактивировать state после получения кода авторизации
+        Сервис авторизации отдаёт нам код авторизации и прилагает код state.
+        Код state необходимо деактивировать"""
         uow = FakeUnitOfWork()
-        messagebus.handle(commands.CreateBatch("b1", "GARISH-RUG", 100, None), uow)
-        messagebus.handle(commands.CreateBatch("b2", "GARISH-RUG", 99, None), uow)
-        assert "b2" in [b.reference for b in uow.states.get("GARISH-RUG").batches]
-
-
-class TestAllocate:
-    def test_allocates(self):
-        uow = FakeUnitOfWork()
+        [state_code] = messagebus.handle(
+            commands.CreateAuthorization("source_url"),
+            uow
+        )
         messagebus.handle(
-            commands.CreateBatch("batch1", "COMPLICATED-LAMP", 100, None), uow
+            commands.ProcessGrantRecieved(
+                state_code,
+                "authorization_code",
+                "test_code"
+            ),
+            uow
         )
-        results = messagebus.handle(
-            commands.Allocate("o1", "COMPLICATED-LAMP", 10), uow
+        auth = uow.authorizations.get_by_state_code(state_code)
+        assert not auth.state.is_active
+
+
+class TestGrant:
+    """Обработать полученный код авторизации
+
+    С кодом авторизации приходит state - в зависимости от его валидации
+    либо принимаем код авторизации, либо отвергаем операцию"""
+    def test_process_grant_then_get_auth_by_grant_and_get_grant_for_auth(self):
+        uow = FakeUnitOfWork()
+        [state_code] = messagebus.handle(
+            commands.CreateAuthorization("source_url"),
+            uow
         )
-        assert results.pop(0) == "batch1"
-        [batch] = uow.states.get("COMPLICATED-LAMP").batches
-        assert batch.available_quantity == 90
-
-    def test_errors_for_invalid_sku(self):
-        uow = FakeUnitOfWork()
-        messagebus.handle(commands.CreateBatch("b1", "AREALSKU", 100, None), uow)
-
-        with pytest.raises(handlers.InvalidSku, match="Invalid sku NONEXISTENTSKU"):
-            messagebus.handle(commands.Allocate("o1", "NONEXISTENTSKU", 10), uow)
-
-    def test_commits(self):
-        uow = FakeUnitOfWork()
         messagebus.handle(
-            commands.CreateBatch("b1", "OMINOUS-MIRROR", 100, None), uow
+            commands.ProcessGrantRecieved(
+                state_code,
+                "authorization_code",
+                "test_code"
+            ),
+            uow
         )
-        messagebus.handle(commands.Allocate("o1", "OMINOUS-MIRROR", 10), uow)
+        assert uow.authorizations.get_by_grant_code("test_code") is not None
+        assert uow.authorizations.get_by_grant_code("test_code").is_active
         assert uow.committed
 
-    def test_sends_email_on_out_of_stock_error(self):
+    def test_grant_with_wrong_stateCode_raises_InvalidState_exception(self):
         uow = FakeUnitOfWork()
-        messagebus.handle(
-            commands.CreateBatch("b1", "POPULAR-CURTAINS", 9, None), uow
-        )
+        [auth] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
 
-        with mock.patch("allocation.adapters.email.send") as mock_send_mail:
-            messagebus.handle(commands.Allocate("o1", "POPULAR-CURTAINS", 10), uow)
-            assert mock_send_mail.call_args == mock.call(
-                "stock@made.com", f"Out of stock for POPULAR-CURTAINS"
+        with pytest.raises(exceptions.InvalidState, match="No active authorization found"):
+            messagebus.handle(commands.ProcessGrantRecieved("wrong_state_code", "authorization_code", "test_code"), uow)
+
+    def test_grant_with_inactive_stateCode_raises_INACTIVEState_exception(self):
+        uow = FakeUnitOfWork()
+        [state_code] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        auth = uow.authorizations.get_by_state_code(state_code)
+        auth.state.deactivate()
+
+        with pytest.raises(exceptions.InactiveState, match="State is inactive"):
+            messagebus.handle(commands.ProcessGrantRecieved(
+                    auth.state.code,
+                    "authorization_code",
+                    "test_code"
+                ),
+                uow
             )
 
 
-class TestChangeBatchQuantity:
-    def test_changes_available_quantity(self):
+class TestAccessToken:
+    def test_for_existing_authorization_by_access_token(self):
         uow = FakeUnitOfWork()
-        messagebus.handle(
-            commands.CreateBatch("batch1", "ADORABLE-SETTEE", 100, None), uow
+        [state_code] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        messagebus.handle(commands.ProcessGrantRecieved(state_code, "authorization_code", "test_code"), uow)
+        auth = uow.authorizations.get_by_state_code(state_code)
+        auth.tokens.append(model.Token("test_token"))
+
+        assert uow.authorizations.get_by_token("test_token") is not None
+        assert uow.committed
+
+    def test_get_active_token_for_existing_authorization(self):
+        uow = FakeUnitOfWork()
+        [state_code] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        messagebus.handle(commands.ProcessGrantRecieved(state_code, "authorization_code", "test_code"), uow)
+        auth = uow.authorizations.get_by_state_code(state_code)
+        auth.tokens.append(model.Token("test_token"))
+
+        assert auth.get_active_token().access_token == "test_token"
+        assert uow.committed
+
+
+class TestAttackHandling:
+    def test_for_existing_authorization_inactive_STATECode_deactivates_authorization_completely(self):
+        uow = FakeUnitOfWork()
+        [state_code] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        auth = uow.authorizations.get_by_state_code(state_code)
+        grant = model.Grant("authorization_code", "test_code")
+        auth.grants.append(grant)
+
+        token = model.Token(access_token="test_token", expires_in=3600)
+        auth.tokens.append(token)
+
+        assert auth.is_active
+        assert auth.state.is_active
+        assert grant.is_active
+        assert token.is_active
+
+        auth.state.deactivate()
+        with pytest.raises(exceptions.InactiveState, match="State is inactive"):
+            messagebus.handle(commands.ProcessGrantRecieved(auth.state.code, "authorization_code", "test_code"), uow)
+
+        assert not auth.is_active
+        assert not auth.state.is_active
+        assert not grant.is_active
+        assert not token.is_active
+
+
+class TestTokenRequest:
+    def test_tokenRequester_runs_token_request(self):
+        """Убедиться, что при запросе токена что-то приходит в ответ"""
+        uow = FakeUnitOfWork()
+        auth = model.Authorization(
+            grants=[model.Grant("authorization_code", "test_code")]
         )
-        [batch] = uow.states.get(sku="ADORABLE-SETTEE").batches
-        assert batch.available_quantity == 100
+        uow.authorizations.add(auth)
+        messagebus.handle(commands.RequestToken("test_code"), uow)
+        token = auth.get_active_token()
+        assert token is not None
 
-        messagebus.handle(commands.ChangeBatchQuantity("batch1", 50), uow)
+    def test_several_tokenRequests_return_different_tokens(self):
+        """Проверить, что при каждом новом запросе токена,
+        приходит другой токен.
 
-        assert batch.available_quantity == 50
-
-    def test_reallocates_if_necessary(self):
+        То есть нет одинаковых токенов"""
         uow = FakeUnitOfWork()
-        history = [
-            commands.CreateBatch("batch1", "INDIFFERENT-TABLE", 50, None),
-            commands.CreateBatch("batch2", "INDIFFERENT-TABLE", 50, date.today()),
-            commands.Allocate("order1", "INDIFFERENT-TABLE", 20),
-            commands.Allocate("order2", "INDIFFERENT-TABLE", 20),
-        ]
-        for msg in history:
-            messagebus.handle(msg, uow)
-        [batch1, batch2] = uow.states.get(sku="INDIFFERENT-TABLE").batches
-        assert batch1.available_quantity == 10
-        assert batch2.available_quantity == 50
+        auth = model.Authorization(
+            grants=[
+                model.Grant("authorization_code", "test_code1"),
+                model.Grant("refresh_token", "test_code2"),
+            ]
+        )
+        uow.authorizations.add(auth)
+        [token1] = messagebus.handle(commands.RequestToken("test_code1"), uow)
+        [token2] = messagebus.handle(commands.RequestToken("test_code2"), uow)
+        assert not token1.access_token == token2.access_token
 
-        messagebus.handle(commands.ChangeBatchQuantity("batch1", 25), uow)
+    def test_tokenRequest_deactivates_old_token_and_old_grant(self):
+        """Проверить, что после запроса нового токена
+        и гранта (токена обновления),
+        старые токен и грант деактивированы"""
+        uow = FakeUnitOfWork()
+        grant = model.Grant("refresh_token", "test_code")
+        token = model.Token("test_access_token")
+        auth = model.Authorization(grants=[grant], tokens=[token])
+        uow.authorizations.add(auth)
 
-        # order1 or order2 will be deallocated, so we'll have 25 - 20
-        assert batch1.available_quantity == 5
-        # and 20 will be reallocated to the next batch
-        assert batch2.available_quantity == 30
+        assert grant.is_active
+        assert token.is_active
+        [access_token] = messagebus.handle(
+            commands.RequestToken("test_code"),
+            uow
+        )
+        assert not grant.is_active
+        assert not token.is_active
+
+
+class TestDesks:
+    def test_desk_creation():
+        pass
