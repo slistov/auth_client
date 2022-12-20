@@ -9,7 +9,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from oauth_client_lib.service_layer.oauth_service import AbstractOAuthService
+from oauth_client_lib.service_layer.oauth_provider import AbstractOAuthProvider
 from oauth_client_lib.adapters.orm import mapper_registry, start_mappers
 from oauth_client_lib import config
 
@@ -83,7 +83,7 @@ def restart_api():
     wait_for_webapp_to_come_up()
 
 
-class FakeOAuthService(AbstractOAuthService):
+class FakeOAuthProvider(AbstractOAuthProvider):
     """Фейковый сервис авторизации для тестирования
 
     Посылаем ему запросы, он должен что-нибудь ответить"""
@@ -95,34 +95,21 @@ class FakeOAuthService(AbstractOAuthService):
     def _post(self, endpoint, data):
         self.endpoint = endpoint
         self.data = data
+        self.status_code = 200
+        self.json_data = {
+            "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}",
+            "refresh_token": "test_refresh_token", 
+        }
         time.sleep(0.5)
         # к токену добавить код гранта, чтобы токены отличать друг от друга
         # либо code, либо refresh_token - что есть, то и добавить
-        return {
-            "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}",
-            "refresh_token": "test_refresh_token"
-        }
+        return self
+    
 
     @property
     def _url(self):
         return f"{self.service_url}{self.endpoint}"
 
 # @pytest.fixture
-# def fake_oauth_service():
-#     return FakeOAuthService()
-
-
-class FakeTokenRequester():
-    def get_token(self):
-        return "fake_token"
-
-    def get_grant(self):
-        return "fake_grant"
-
-    def get_grant_and_token(self):
-        return self.get_grant(), self.get_token()
-
-
-@pytest.fixture
-def fake_token_requester():
-    return FakeTokenRequester()
+# def fake_oauth_provider():
+#     return FakeOAuthProvider()
