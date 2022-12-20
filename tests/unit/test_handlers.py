@@ -5,12 +5,11 @@ from oauth_client_lib.domain import commands
 from oauth_client_lib.service_layer import (
     messagebus,
     unit_of_work,
-    oauth_requester,
     exceptions
 )
 
 from oauth_client_lib.domain import model
-from ..conftest import FakeOAuthService
+from ..conftest import FakeOAuthProvider
 
 
 class FakeRepository(repository.AbstractRepository):
@@ -51,11 +50,6 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 
     def rollback(self):
         pass
-
-    def _get_token_requester(self):
-        return oauth_requester.OAuthRequester(
-            FakeOAuthService("http://fake-oauth.service.com/api")
-        )
 
 
 class TestAuthorization:
@@ -232,8 +226,3 @@ class TestTokenRequest:
         )
         assert not grant.is_active
         assert not token.is_active
-
-
-class TestDesks:
-    def test_desk_creation():
-        pass

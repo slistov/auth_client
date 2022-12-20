@@ -8,8 +8,7 @@ from sqlalchemy.orm.session import Session
 
 from oauth_client_lib import config
 from oauth_client_lib.adapters import repository
-from oauth_client_lib.service_layer import oauth_requester
-from oauth_client_lib.service_layer import oauth_service
+from oauth_client_lib.service_layer import oauth_provider
 
 
 class AbstractUnitOfWork(abc.ABC):
@@ -28,13 +27,6 @@ class AbstractUnitOfWork(abc.ABC):
         for obj in self.authorizations.seen:
             while obj.events:
                 yield obj.events.pop(0)
-
-    def get_token_requester(self):
-        return self._get_token_requester()
-
-    @abc.abstractmethod
-    def _get_token_requester(self):
-        raise NotImplementedError
 
     @abc.abstractmethod
     def _commit(self):
@@ -71,7 +63,3 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def rollback(self):
         self.session.rollback()
-
-    def _get_token_requester(self) -> oauth_requester.OAuthRequester:
-        oauth = oauth_service.OAuthService(config.get_oauth_host())
-        return oauth_requester.OAuthRequester(oauth)
