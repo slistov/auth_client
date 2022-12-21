@@ -8,6 +8,7 @@ from oauth_client_lib.domain import model, commands
 from .unit_of_work import AbstractUnitOfWork
 from . import exceptions
 from .. import config
+from . import oauth_provider
 
 
 def create_authorization(
@@ -67,6 +68,7 @@ def request_token(
         if old_token:
             old_token.deactivate()
 
+        # oauth = oauth_provider.OAuthProvider(service_url=)
         token_requester = uow.get_token_requester()
         data = token_requester.prepare_tokenRequest_data(old_grant)
         token_requester.post(config.get_oauth_token_endpoint_uri(), data)
