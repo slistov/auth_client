@@ -113,17 +113,19 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 ALGORITHM = config['ALGORITHM']
 
 
-
 def get_api_authorize_uri():
     return AUTHORIZE
+
 
 def get_oauth_callback_URL():
     base_url = get_api_url()
     callback_uri = CALLBACK
     return f"{base_url}{callback_uri}"
 
+
 def get_oauth_token_endpoint_uri():
     return OAUTH_TOKEN_ENDPOINT
+
 
 def get_scope():
     return os.environ.get("SCOPE", "email")
