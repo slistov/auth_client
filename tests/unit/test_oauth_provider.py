@@ -1,4 +1,5 @@
 from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
+from urllib.parse import urlparse, parse_qs
 
 
 class TestOAuthProvider:
@@ -15,8 +16,11 @@ class TestOAuthProvider:
     def test_returns_authorize_uri(self, test_provider: OAuthProvider):
         assert test_provider.get_authorize_uri()
 
-    def test_authorize_uri_contains_state(sefl):
-        pass
+    def test_authorize_uri_contains_state(self, test_provider: OAuthProvider):
+        url = test_provider.get_authorize_uri()
+        parsed = urlparse(url=url)
+        params = parse_qs(parsed.query)
+        assert params["state"][0] == test_provider.authorization.state.state
 
     def test_accepts_code_if_state_is_valid(self):
         pass
