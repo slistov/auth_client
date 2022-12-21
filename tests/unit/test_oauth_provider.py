@@ -14,22 +14,17 @@ class TestOAuthProvider:
         assert test_provider.public_keys_url == 'https://www.testapis.com/oauth2/v3/certs'
 
     def test_returns_authorize_uri(self, test_provider: OAuthProvider):
-        assert test_provider.get_authorize_uri()
+        assert test_provider.get_authorize_uri(state='test_state')
 
     def test_authorize_uri_contains_state(self, test_provider: OAuthProvider):
-        url = test_provider.get_authorize_uri()
+        url = test_provider.get_authorize_uri(state='test_state')
         parsed = urlparse(url=url)
         params = parse_qs(parsed.query)
-        assert params["state"][0] == test_provider.authorization.state.state
+        assert params["state"][0] == 'test_state'
 
-    def test_accepts_code_if_state_is_valid(self):
-        pass
-
-    def test_denies_code_if_state_is_invalid(self):
-        pass
-
-    def test_requests_token_after_code_accepted(self):
-        pass
+    def test_exchanges_grant_for_token(self, test_provider: OAuthProvider):
+        token = test_provider.exchange_grant_for_token(code='test_code')
+        assert token == 'test_token'
 
     def test_requests_email_using_token(self):
         pass

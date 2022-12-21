@@ -3,6 +3,7 @@ from . import exceptions
 from ..domain import model
 from typing import List
 from urllib.parse import urlencode
+import aiohttp
 
 
 class OAuthProvider:
@@ -22,32 +23,26 @@ class OAuthProvider:
         self.scopes = scopes
         self.public_keys_url = public_keys_url
         self.public_keys = public_keys
-        state = model.State(state)
-        self.authorization = model.Authorization(state=state)
 
-    def get_authorize_uri(self):
+    def get_authorize_uri(self, state: str):
         assert self.code_url
-        params = self._get_authorize_params()
+        params = self._get_authorize_params(state)
         return f"{self.code_url}?{urlencode(params)}"
-###############################    
-    def _get_authorize_params(self):
+
+    def _get_authorize_params(self, state: str):
         client_id, _ = get_client_credentials()
         return {
             "response_type": "code",
-            "state": self.authorization.state.state,
+            "state": state,
             "redirect_uri": get_oauth_callback_URL(),
             "client_id": client_id
         }
-    def post(self, endpoint, data):
-        return self._post(endpoint, data)
 
-    @property
-    def url(self):
-        return self._url
-
-    @property
-    def _params(self):
-        return self.params
+    async def exchange_grant_for_token(self, code):
+        return await post_async(
+            url=self.token_url,
+            data=
+        )
 
     @classmethod
     def _get_tokenRequest_data(cls, grant):
@@ -77,14 +72,6 @@ class OAuthProvider:
             )
         self.response = response
         return self.response
-#     async def _post(self, endpoint, data):
-#         async with aiohttp.ClientSession() as session:
-#             self._url = f"{self.service_url}{endpoint}"
-#             response = session.post(
-#                 url=self._url,
-#                 data=data
-#             )
-#             return response.json()
 
     def get_token(self) -> model.Token:
         return model.Token(self._get_token_str())
@@ -99,3 +86,11 @@ class OAuthProvider:
     def _get_grant_code(self):
         return self.response.json().get("refresh_token", None)
         # return self.response.get("refresh_token", None)
+
+async def post_async(url, data):
+    async with aiohttp.ClientSession() as session:
+        response = await session.post(
+            url=url,
+            data=data
+        )
+        return response.json()
