@@ -1,22 +1,31 @@
-from ..conftest import FakeOAuthProvider
+from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
 
 
-class TestOAuthRequest:
-    def test_oauthRequester_sends_request(self):
-        fake_oauth_provider = FakeOAuthProvider("http://fake.oauth.service/api")
-        oauth = OAuthRequester(fake_oauth_provider)
+class TestOAuthProvider:
+    def test_creation(self, test_provider):
+        assert test_provider.name == 'test_name'
+        assert test_provider.code_url == 'https://accounts.test.com/o/oauth2/v2/auth'
+        assert test_provider.scopes == [
+            'https://www.testapis.com/auth/userinfo.email',
+            'openid'
+        ]
+        assert test_provider.token_url == 'https://oauth2.testapis.com/token'
+        assert test_provider.public_keys_url == 'https://www.testapis.com/oauth2/v3/certs'
 
-        data = {"param1": "value1", "param2": "value2"}
-        results = oauth.post(endpoint="/token", data=data)
+    def test_returns_authorize_uri(self, test_provider: OAuthProvider):
+        assert test_provider.get_authorize_uri()
 
-        assert fake_oauth_provider.url == "http://fake.oauth.service/api/token"
-        assert fake_oauth_provider.data == data
+    def test_authorize_uri_contains_state(sefl):
+        pass
 
-    def test_oauthRequester_recieves_response_from_oauth(self):
-        fake_oauth_provider = FakeOAuthProvider("http://fake.oauth.service/api")
-        oauth = OAuthRequester(fake_oauth_provider)
+    def test_accepts_code_if_state_is_valid(self):
+        pass
 
-        data = {"code": "test_code", "param2": "value2"}
-        results = oauth.post(endpoint="/token", data=data)
+    def test_denies_code_if_state_is_invalid(self):
+        pass
 
-        assert results == {'access_token': 'test_access_token_for_grant_test_code', 'refresh_token': 'test_refresh_token'}
+    def test_requests_token_after_code_accepted(self):
+        pass
+
+    def test_requests_email_using_token(self):
+        pass
