@@ -9,7 +9,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from oauth_client_lib.service_layer.oauth_provider import AbstractOAuthProvider
+from oauth_client_lib.service_layer.oauth_provider import OAuthProvider
 from oauth_client_lib.adapters.orm import mapper_registry, start_mappers
 from oauth_client_lib import config
 
@@ -83,33 +83,47 @@ def restart_api():
     wait_for_webapp_to_come_up()
 
 
-class FakeOAuthProvider(AbstractOAuthProvider):
-    """Фейковый сервис авторизации для тестирования
+class FakeOAuthProvider(OAuthProvider):
+    pass
+#     """Фейковый сервис авторизации для тестирования
 
-    Посылаем ему запросы, он должен что-нибудь ответить"""
-    def __init__(self, service_url) -> None:
-        self.service_url = service_url
-        self.endpoint = None
-        self.data = None
+#     Посылаем ему запросы, он должен что-нибудь ответить"""
+#     def __init__(self, service_url) -> None:
+#         self.service_url = service_url
+#         self.endpoint = None
+#         self.data = None
 
-    def _post(self, endpoint, data):
-        self.endpoint = endpoint
-        self.data = data
-        self.status_code = 200
-        self.json_data = {
-            "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}",
-            "refresh_token": "test_refresh_token", 
-        }
-        time.sleep(0.5)
-        # к токену добавить код гранта, чтобы токены отличать друг от друга
-        # либо code, либо refresh_token - что есть, то и добавить
-        return self
+#     def _post(self, endpoint, data):
+#         self.endpoint = endpoint
+#         self.data = data
+#         self.status_code = 200
+#         self.json_data = {
+#             "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}",
+#             "refresh_token": "test_refresh_token", 
+#         }
+#         time.sleep(0.5)
+#         # к токену добавить код гранта, чтобы токены отличать друг от друга
+#         # либо code, либо refresh_token - что есть, то и добавить
+#         return self
     
 
-    @property
-    def _url(self):
-        return f"{self.service_url}{self.endpoint}"
+#     @property
+#     def _url(self):
+#         return f"{self.service_url}{self.endpoint}"
 
 # @pytest.fixture
 # def fake_oauth_provider():
 #     return FakeOAuthProvider()
+
+@pytest.fixture
+def test_provider():
+    return OAuthProvider(
+            name='test_name',
+            code_url='https://accounts.test.com/o/oauth2/v2/auth',
+            scopes=[
+                'https://www.testapis.com/auth/userinfo.email',
+                'openid'
+            ],
+            token_url='https://oauth2.testapis.com/token',
+            public_keys_url='https://www.testapis.com/oauth2/v3/certs'
+        )
