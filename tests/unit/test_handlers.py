@@ -20,9 +20,9 @@ class FakeRepository(repository.AbstractRepository):
     def _add(self, authorization):
         self._authorizations.add(authorization)
 
-    def _get_by_state_code(self, code) -> model.Authorization:
+    def _get_by_state(self, state) -> model.Authorization:
         return next(
-            (a for a in self._authorizations if code == a.state.code), None
+            (a for a in self._authorizations if state == a.state.state), None
         )
 
     def _get_by_grant_code(self, code):
@@ -90,7 +90,7 @@ class TestGrant:
 
     С кодом авторизации приходит state - в зависимости от его валидации
     либо принимаем код авторизации, либо отвергаем операцию"""
-    def test_process_grant_then_get_auth_by_grant_and_get_grant_for_auth(self):
+    def test_process_grant_then_get_auth_by_grant(self):
         uow = FakeUnitOfWork()
         [state_code] = messagebus.handle(
             commands.CreateAuthorization("source_url"),
@@ -123,7 +123,7 @@ class TestGrant:
 
         with pytest.raises(exceptions.InactiveState, match="State is inactive"):
             messagebus.handle(commands.ProcessGrantRecieved(
-                    auth.state.code,
+                    auth.state.state,
                     "authorization_code",
                     "test_code"
                 ),
@@ -171,7 +171,7 @@ class TestAttackHandling:
 
         auth.state.deactivate()
         with pytest.raises(exceptions.InactiveState, match="State is inactive"):
-            messagebus.handle(commands.ProcessGrantRecieved(auth.state.code, "authorization_code", "test_code"), uow)
+            messagebus.handle(commands.ProcessGrantRecieved(auth.state.state, "authorization_code", "test_code"), uow)
 
         assert not auth.is_active
         assert not auth.state.is_active

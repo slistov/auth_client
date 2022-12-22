@@ -20,7 +20,7 @@ def create_authorization(
         auth = model.Authorization(state=state)
         uow.authorizations.add(auth)
         uow.commit()
-        return state.code
+        return state.state
 
 
 def process_grant_recieved(
@@ -68,13 +68,10 @@ def request_token(
         if old_token:
             old_token.deactivate()
 
-        # oauth = oauth_provider.OAuthProvider(service_url=)
-        token_requester = uow.get_token_requester()
-        data = token_requester.prepare_tokenRequest_data(old_grant)
-        token_requester.post(config.get_oauth_token_endpoint_uri(), data)
-
-        new_token = token_requester.get_token()
-        new_grant = token_requester.get_grant()
+        oauth = oauth_provider.OAuthProvider(name=auth.provider_name)
+        oauth.request_token(code=old_grant.code, type=old_grant.grant_type)
+        new_token = oauth.get_token()
+        new_grant = oauth.get_grant()
         auth.tokens.append(new_token)
         auth.grants.append(new_grant)
         uow.commit()
