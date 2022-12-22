@@ -180,14 +180,19 @@ class TestAttackHandling:
 
 
 class TestTokenRequest:
-    def test_tokenRequester_runs_token_request(self):
+    @pytest.mark.asyncio
+    async def test_tokenRequester_runs_token_request(self):
         """Убедиться, что при запросе токена что-то приходит в ответ"""
         uow = FakeUnitOfWork()
         auth = model.Authorization(
             grants=[model.Grant("authorization_code", "test_code")]
         )
         uow.authorizations.add(auth)
-        messagebus.handle(commands.RequestToken("test_code"), uow)
+        do_request_token = commands.RequestToken(
+            "test_code",
+            oauth=FakeOAuthProvider()
+        )
+        await messagebus.handle(do_request_token, uow)
         token = auth.get_active_token()
         assert token is not None
 
