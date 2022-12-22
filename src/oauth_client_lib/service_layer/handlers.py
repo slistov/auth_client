@@ -48,7 +48,7 @@ def process_grant_recieved(
         uow.commit()
 
 
-def request_token(
+async def request_token(
     cmd: commands.RequestToken,
     uow: AbstractUnitOfWork
 ):
@@ -67,9 +67,17 @@ def request_token(
         old_token = auth.get_active_token()
         if old_token:
             old_token.deactivate()
-
-        oauth = oauth_provider.OAuthProvider(name=auth.provider_name)
-        oauth.request_token(code=old_grant.code, type=old_grant.grant_type)
+        
+        oauth = cmd.oauth
+        if not oauth:
+            scopes, urls = config.get_oauth_params(auth.provider_name)
+            oauth = oauth_provider.OAuthProvider(
+                scopes=scopes,
+                code_url=urls['code'],
+                token_url=urls['token'],
+                public_keys_url=urls['keys']
+            )
+        await oauth.request_token(grant=old_grant)
         new_token = oauth.get_token()
         new_grant = oauth.get_grant()
         auth.tokens.append(new_token)

@@ -84,36 +84,34 @@ def restart_api():
 
 
 class FakeOAuthProvider(OAuthProvider):
-    pass
-#     """Фейковый сервис авторизации для тестирования
+    """Фейковый сервис авторизации для тестирования
 
-#     Посылаем ему запросы, он должен что-нибудь ответить"""
-#     def __init__(self, service_url) -> None:
-#         self.service_url = service_url
-#         self.endpoint = None
-#         self.data = None
+    Посылаем ему запросы, он должен что-нибудь ответить"""
+    def __init__(self) -> None:
+        self.endpoint = None
+        self.data = None
 
-#     def _post(self, endpoint, data):
-#         self.endpoint = endpoint
-#         self.data = data
-#         self.status_code = 200
-#         self.json_data = {
-#             "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}",
-#             "refresh_token": "test_refresh_token", 
-#         }
-#         time.sleep(0.5)
-#         # к токену добавить код гранта, чтобы токены отличать друг от друга
-#         # либо code, либо refresh_token - что есть, то и добавить
-#         return self
+    def _post(self, endpoint, data):
+        self.endpoint = endpoint
+        self.data = data
+        self.status_code = 200
+        self.json_data = {
+            "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}",
+            "refresh_token": "test_refresh_token", 
+        }
+        time.sleep(0.5)
+        # к токену добавить код гранта, чтобы токены отличать друг от друга
+        # либо code, либо refresh_token - что есть, то и добавить
+        return self
     
 
-#     @property
-#     def _url(self):
-#         return f"{self.service_url}{self.endpoint}"
+    @property
+    def _url(self):
+        return f"{self.service_url}{self.endpoint}"
 
-# @pytest.fixture
-# def fake_oauth_provider():
-#     return FakeOAuthProvider()
+@pytest.fixture
+def fake_oauth_provider():
+    return FakeOAuthProvider()
 
 @pytest.fixture
 def test_provider():
