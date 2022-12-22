@@ -14,7 +14,7 @@ class TestOAuthProvider:
         assert test_provider.public_keys_url == 'https://www.testapis.com/oauth2/v3/certs'
 
     def test_returns_authorize_uri(self, test_provider: OAuthProvider):
-        assert test_provider.get_authorize_uri(state='test_state')
+        assert test_provider.get_authorize_uri()
 
     def test_authorize_uri_contains_state(self, test_provider: OAuthProvider):
         url = test_provider.get_authorize_uri(state='test_state')

@@ -1,6 +1,12 @@
 from ..config import get_oauth_callback_URL, get_client_credentials
 from . import exceptions
 from ..domain import model
+
+from ..domain import commands
+from ..service_layer import unit_of_work
+from ..service_layer import messagebus
+from ..config import config
+
 from typing import List
 from urllib.parse import urlencode
 import aiohttp
@@ -14,8 +20,7 @@ class OAuthProvider:
         token_url,
         scopes=[],
         public_keys_url='',
-        public_keys: List[dict] = [],
-        state=None
+        public_keys: List[dict] = []
     ):
         self.name = name
         self.code_url = code_url
@@ -24,25 +29,31 @@ class OAuthProvider:
         self.public_keys_url = public_keys_url
         self.public_keys = public_keys
 
-    def get_authorize_uri(self, state: str):
+    def get_authorize_uri(self):
         assert self.code_url
-        params = self._get_authorize_params(state)
-        return f"{self.code_url}?{urlencode(params)}"
+        uow = unit_of_work.SqlAlchemyUnitOfWork()
+        cmd = commands.CreateAuthorization("origin")
+        [state_code] = messagebus.handle(cmd, uow)
+        return self._get_oauth_uri(state_code)
 
-    def _get_authorize_params(self, state: str):
-        client_id, _ = get_client_credentials()
-        return {
+    def _get_oauth_uri(self, state_code):
+        client_id, _ = config.get_client_credentials()
+
+        params = {
             "response_type": "code",
-            "state": state,
-            "redirect_uri": get_oauth_callback_URL(),
-            "client_id": client_id
+            "client_id": client_id,
+            "redirect_uri": config.get_oauth_callback_URL(),
+            "scope": self.scopes,
+            "state": state_code
         }
+        return f"{config.get_oauth_host()}?{urlencode(params)}"
 
-    async def exchange_grant_for_token(self, code):
-        return await post_async(
-            url=self.token_url,
-            data=
-        )
+
+    # async def exchange_grant_for_token(self, code):
+    #     return await post_async(
+    #         url=self.token_url,
+    #         data=
+    #     )
 
     @classmethod
     def _get_tokenRequest_data(cls, grant):
