@@ -9,7 +9,6 @@ from oauth_client_lib.service_layer import (
 )
 
 from oauth_client_lib.domain import model
-from ..conftest import FakeOAuthProvider
 
 
 class FakeRepository(repository.AbstractRepository):
@@ -53,27 +52,29 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 
 
 class TestAuthorization:
-    def test_authorization_is_created_and_could_be_found_by_stateCode(self):
+    @pytest.mark.asyncio
+    async def test_authorization_is_created_and_could_be_found_by_stateCode(self):
         """Содать авторизацию
         После создания авторизации, её можно получить по state-коду"""
         uow = FakeUnitOfWork()
-        [state_code] = messagebus.handle(
+        [state_code] = await messagebus.handle(
             commands.CreateAuthorization("source_url"),
             uow
         )
         assert uow.authorizations.get_by_state_code(state_code) is not None
         assert uow.committed
 
-    def test_state_becomes_inactive_after_AuthCodeGrant_processed(self):
+    @pytest.mark.asyncio
+    async def test_state_becomes_inactive_after_AuthCodeGrant_processed(self):
         """Деактивировать state после получения кода авторизации
         Сервис авторизации отдаёт нам код авторизации и прилагает код state.
         Код state необходимо деактивировать"""
         uow = FakeUnitOfWork()
-        [state_code] = messagebus.handle(
+        [state_code] = await messagebus.handle(
             commands.CreateAuthorization("source_url"),
             uow
         )
-        messagebus.handle(
+        await messagebus.handle(
             commands.ProcessGrantRecieved(
                 state_code,
                 "authorization_code",
@@ -90,13 +91,14 @@ class TestGrant:
 
     С кодом авторизации приходит state - в зависимости от его валидации
     либо принимаем код авторизации, либо отвергаем операцию"""
-    def test_process_grant_then_get_auth_by_grant(self):
+    @pytest.mark.asyncio
+    async def test_process_grant_then_get_auth_by_grant(self):
         uow = FakeUnitOfWork()
-        [state_code] = messagebus.handle(
+        [state_code] = await messagebus.handle(
             commands.CreateAuthorization("source_url"),
             uow
         )
-        messagebus.handle(
+        await messagebus.handle(
             commands.ProcessGrantRecieved(
                 state_code,
                 "authorization_code",
@@ -108,21 +110,23 @@ class TestGrant:
         assert uow.authorizations.get_by_grant_code("test_code").is_active
         assert uow.committed
 
-    def test_grant_with_wrong_stateCode_raises_InvalidState_exception(self):
+    @pytest.mark.asyncio
+    async def test_grant_with_wrong_stateCode_raises_InvalidState_exception(self):
         uow = FakeUnitOfWork()
-        [auth] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        [auth] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
 
         with pytest.raises(exceptions.InvalidState, match="No active authorization found"):
-            messagebus.handle(commands.ProcessGrantRecieved("wrong_state_code", "authorization_code", "test_code"), uow)
+            await messagebus.handle(commands.ProcessGrantRecieved("wrong_state_code", "authorization_code", "test_code"), uow)
 
-    def test_grant_with_inactive_stateCode_raises_INACTIVEState_exception(self):
+    @pytest.mark.asyncio
+    async def test_grant_with_inactive_stateCode_raises_INACTIVEState_exception(self):
         uow = FakeUnitOfWork()
-        [state_code] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
         auth = uow.authorizations.get_by_state_code(state_code)
         auth.state.deactivate()
 
         with pytest.raises(exceptions.InactiveState, match="State is inactive"):
-            messagebus.handle(commands.ProcessGrantRecieved(
+            await messagebus.handle(commands.ProcessGrantRecieved(
                     auth.state.state,
                     "authorization_code",
                     "test_code"
@@ -132,20 +136,22 @@ class TestGrant:
 
 
 class TestAccessToken:
-    def test_for_existing_authorization_by_access_token(self):
+    @pytest.mark.asyncio
+    async def test_for_existing_authorization_by_access_token(self):
         uow = FakeUnitOfWork()
-        [state_code] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
-        messagebus.handle(commands.ProcessGrantRecieved(state_code, "authorization_code", "test_code"), uow)
+        [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        await messagebus.handle(commands.ProcessGrantRecieved(state_code, "authorization_code", "test_code"), uow)
         auth = uow.authorizations.get_by_state_code(state_code)
         auth.tokens.append(model.Token("test_token"))
 
         assert uow.authorizations.get_by_token("test_token") is not None
         assert uow.committed
 
-    def test_get_active_token_for_existing_authorization(self):
+    @pytest.mark.asyncio
+    async def test_get_active_token_for_existing_authorization(self):
         uow = FakeUnitOfWork()
-        [state_code] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
-        messagebus.handle(commands.ProcessGrantRecieved(state_code, "authorization_code", "test_code"), uow)
+        [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        await messagebus.handle(commands.ProcessGrantRecieved(state_code, "authorization_code", "test_code"), uow)
         auth = uow.authorizations.get_by_state_code(state_code)
         auth.tokens.append(model.Token("test_token"))
 
@@ -154,9 +160,10 @@ class TestAccessToken:
 
 
 class TestAttackHandling:
-    def test_for_existing_authorization_inactive_STATECode_deactivates_authorization_completely(self):
+    @pytest.mark.asyncio
+    async def test_for_existing_authorization_inactive_STATECode_deactivates_authorization_completely(self):
         uow = FakeUnitOfWork()
-        [state_code] = messagebus.handle(commands.CreateAuthorization("source_url"), uow)
+        [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
         auth = uow.authorizations.get_by_state_code(state_code)
         grant = model.Grant("authorization_code", "test_code")
         auth.grants.append(grant)
@@ -171,7 +178,7 @@ class TestAttackHandling:
 
         auth.state.deactivate()
         with pytest.raises(exceptions.InactiveState, match="State is inactive"):
-            messagebus.handle(commands.ProcessGrantRecieved(auth.state.state, "authorization_code", "test_code"), uow)
+            await messagebus.handle(commands.ProcessGrantRecieved(auth.state.state, "authorization_code", "test_code"), uow)
 
         assert not auth.is_active
         assert not auth.state.is_active
