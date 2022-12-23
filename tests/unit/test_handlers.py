@@ -181,22 +181,21 @@ class TestAttackHandling:
 
 class TestTokenRequest:
     @pytest.mark.asyncio
-    async def test_tokenRequester_runs_token_request(self):
+    async def test_tokenRequester_runs_token_request(self, test_provider):
         """Убедиться, что при запросе токена что-то приходит в ответ"""
         uow = FakeUnitOfWork()
         auth = model.Authorization(
             grants=[model.Grant("authorization_code", "test_code")]
         )
         uow.authorizations.add(auth)
-        do_request_token = commands.RequestToken(
-            "test_code",
-            oauth=FakeOAuthProvider()
-        )
+        do_request_token = commands.RequestToken("test_code", test_provider)
         await messagebus.handle(do_request_token, uow)
         token = auth.get_active_token()
-        assert token is not None
+        assert token.access_token == 'test_access_token_for_grant_test_code'
 
-    def test_several_tokenRequests_return_different_tokens(self):
+
+    @pytest.mark.asyncio
+    async def test_several_tokenRequests_return_different_tokens(self, test_provider):
         """Проверить, что при каждом новом запросе токена,
         приходит другой токен.
 
@@ -209,11 +208,12 @@ class TestTokenRequest:
             ]
         )
         uow.authorizations.add(auth)
-        [token1] = messagebus.handle(commands.RequestToken("test_code1"), uow)
-        [token2] = messagebus.handle(commands.RequestToken("test_code2"), uow)
+        [token1] = await messagebus.handle(commands.RequestToken("test_code1", test_provider), uow)
+        [token2] = await messagebus.handle(commands.RequestToken("test_code2", test_provider), uow)
         assert not token1.access_token == token2.access_token
 
-    def test_tokenRequest_deactivates_old_token_and_old_grant(self):
+    @pytest.mark.asyncio
+    async def test_tokenRequest_deactivates_old_token_and_old_grant(self, test_provider):
         """Проверить, что после запроса нового токена
         и гранта (токена обновления),
         старые токен и грант деактивированы"""
@@ -225,8 +225,8 @@ class TestTokenRequest:
 
         assert grant.is_active
         assert token.is_active
-        [access_token] = messagebus.handle(
-            commands.RequestToken("test_code"),
+        [access_token] = await messagebus.handle(
+            commands.RequestToken("test_code", test_provider),
             uow
         )
         assert not grant.is_active
