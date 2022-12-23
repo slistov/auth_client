@@ -70,7 +70,7 @@ async def handle_command(
         result = await handler(command, uow=uow)
         queue.extend(uow.collect_new_events())
         return result
-    except Exception:
+    except Exception as e:
         logger.exception("Exception handling command %s", command)
         raise
 

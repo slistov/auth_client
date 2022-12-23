@@ -31,11 +31,11 @@ class OAuthProvider:
         self.client_id = client_id
         self.client_secret = client_secret
 
-    def get_authorize_uri(self):
+    async def get_authorize_uri(self):
         assert self.code_url
         uow = unit_of_work.SqlAlchemyUnitOfWork()
         cmd = commands.CreateAuthorization("origin")
-        [state_code] = messagebus.handle(cmd, uow)
+        [state_code] = await messagebus.handle(cmd, uow)
         return self._get_oauth_uri(state_code)
 
     async def request_token(self, grant):

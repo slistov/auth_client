@@ -11,7 +11,7 @@ from .. import config
 from . import oauth_provider
 
 
-def create_authorization(
+async def create_authorization(
     cmd: commands.CreateAuthorization,
     uow: AbstractUnitOfWork
 ) -> str:
@@ -23,7 +23,7 @@ def create_authorization(
         return state.state
 
 
-def process_grant_recieved(
+async def process_grant_recieved(
     cmd: commands.ProcessGrantRecieved,
     uow: AbstractUnitOfWork
 ):
