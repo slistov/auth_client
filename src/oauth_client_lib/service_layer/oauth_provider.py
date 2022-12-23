@@ -20,7 +20,6 @@ class OAuthProvider:
         token_url=None,
         scopes=[],
         public_keys_url='',
-        public_keys: List[dict] = [],
         client_id='',
         client_secret=''
     ):
@@ -29,7 +28,8 @@ class OAuthProvider:
         self.token_url = token_url
         self.scopes = scopes
         self.public_keys_url = public_keys_url
-        self.public_keys = public_keys
+        self.client_id = client_id
+        self.client_secret = client_secret
 
     def get_authorize_uri(self):
         assert self.code_url
@@ -67,6 +67,8 @@ class OAuthProvider:
         else:
             raise exceptions.InvalidGrant(f"Unknown grant type {grant.grant_type} while requesting token")
 
+        assert self.client_id
+        assert self.client_secret
         data.update({
             "client_id": self.client_id,
             "client_secret": self.client_secret,
