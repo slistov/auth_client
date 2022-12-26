@@ -31,11 +31,11 @@ def get_oauth_params(provider_name):
     return scopes, urls, *secrets[provider_name]
 
 
-def get_api_url():
+def get_api_host():
     return os.environ['API_HOST']
 
 
 def get_oauth_callback_URL():
-    base_url = get_api_url()
+    base_url = get_api_host()
     callback_path = config['oauth']['callback']
     return f"{base_url}{callback_path}"

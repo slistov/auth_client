@@ -1,62 +1,19 @@
 # pylint: disable=no-self-use
 import pytest
-from oauth_client_lib.adapters import repository
 from oauth_client_lib.domain import commands
 from oauth_client_lib.service_layer import (
     messagebus,
-    unit_of_work,
     exceptions
 )
 
 from oauth_client_lib.domain import model
 
 
-class FakeRepository(repository.AbstractRepository):
-    def __init__(self, authorizations):
-        super().__init__()
-        self._authorizations = set(authorizations)
-
-    def _add(self, authorization):
-        self._authorizations.add(authorization)
-
-    def _get_by_state(self, state) -> model.Authorization:
-        return next(
-            (a for a in self._authorizations if state == a.state.state), None
-        )
-
-    def _get_by_grant_code(self, code):
-        return next(
-            (a for a in self._authorizations
-                for grant in a.grants if code == grant.code),
-            None
-        )
-
-    def _get_by_token(self, access_token) -> model.Authorization:
-        return next(
-            (a for a in self._authorizations
-                for token in a.tokens if access_token == token.access_token),
-            None
-        )
-
-
-class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
-    def __init__(self):
-        self.authorizations = FakeRepository([])
-        self.committed = False
-
-    def _commit(self):
-        self.committed = True
-
-    def rollback(self):
-        pass
-
-
 class TestAuthorization:
     @pytest.mark.asyncio
-    async def test_authorization_is_created_and_could_be_found_by_stateCode(self):
+    async def test_authorization_is_created_and_could_be_found_by_stateCode(self, uow):
         """Содать авторизацию
         После создания авторизации, её можно получить по state-коду"""
-        uow = FakeUnitOfWork()
         [state_code] = await messagebus.handle(
             commands.CreateAuthorization("source_url"),
             uow
@@ -65,11 +22,10 @@ class TestAuthorization:
         assert uow.committed
 
     @pytest.mark.asyncio
-    async def test_state_becomes_inactive_after_AuthCodeGrant_processed(self):
+    async def test_state_becomes_inactive_after_AuthCodeGrant_processed(self, uow):
         """Деактивировать state после получения кода авторизации
         Сервис авторизации отдаёт нам код авторизации и прилагает код state.
         Код state необходимо деактивировать"""
-        uow = FakeUnitOfWork()
         [state_code] = await messagebus.handle(
             commands.CreateAuthorization("source_url"),
             uow
@@ -92,8 +48,7 @@ class TestGrant:
     С кодом авторизации приходит state - в зависимости от его валидации
     либо принимаем код авторизации, либо отвергаем операцию"""
     @pytest.mark.asyncio
-    async def test_process_grant_then_get_auth_by_grant(self):
-        uow = FakeUnitOfWork()
+    async def test_process_grant_then_get_auth_by_grant(self, uow):
         [state_code] = await messagebus.handle(
             commands.CreateAuthorization("source_url"),
             uow
@@ -111,16 +66,14 @@ class TestGrant:
         assert uow.committed
 
     @pytest.mark.asyncio
-    async def test_grant_with_wrong_stateCode_raises_InvalidState_exception(self):
-        uow = FakeUnitOfWork()
+    async def test_grant_with_wrong_stateCode_raises_InvalidState_exception(self, uow):
         [auth] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
 
         with pytest.raises(exceptions.InvalidState, match="No active authorization found"):
             await messagebus.handle(commands.ProcessGrantRecieved("wrong_state_code", "authorization_code", "test_code"), uow)
 
     @pytest.mark.asyncio
-    async def test_grant_with_inactive_stateCode_raises_INACTIVEState_exception(self):
-        uow = FakeUnitOfWork()
+    async def test_grant_with_inactive_stateCode_raises_INACTIVEState_exception(self, uow):
         [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
         auth = uow.authorizations.get_by_state_code(state_code)
         auth.state.deactivate()
@@ -137,8 +90,7 @@ class TestGrant:
 
 class TestAccessToken:
     @pytest.mark.asyncio
-    async def test_for_existing_authorization_by_access_token(self):
-        uow = FakeUnitOfWork()
+    async def test_for_existing_authorization_by_access_token(self, uow):
         [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
         await messagebus.handle(commands.ProcessGrantRecieved(state_code, "authorization_code", "test_code"), uow)
         auth = uow.authorizations.get_by_state_code(state_code)
@@ -148,8 +100,7 @@ class TestAccessToken:
         assert uow.committed
 
     @pytest.mark.asyncio
-    async def test_get_active_token_for_existing_authorization(self):
-        uow = FakeUnitOfWork()
+    async def test_get_active_token_for_existing_authorization(self, uow):
         [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
         await messagebus.handle(commands.ProcessGrantRecieved(state_code, "authorization_code", "test_code"), uow)
         auth = uow.authorizations.get_by_state_code(state_code)
@@ -161,8 +112,7 @@ class TestAccessToken:
 
 class TestAttackHandling:
     @pytest.mark.asyncio
-    async def test_for_existing_authorization_inactive_STATECode_deactivates_authorization_completely(self):
-        uow = FakeUnitOfWork()
+    async def test_for_existing_authorization_inactive_STATECode_deactivates_authorization_completely(self, uow):
         [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
         auth = uow.authorizations.get_by_state_code(state_code)
         grant = model.Grant("authorization_code", "test_code")
@@ -188,9 +138,8 @@ class TestAttackHandling:
 
 class TestTokenRequest:
     @pytest.mark.asyncio
-    async def test_tokenRequester_runs_token_request(self, test_provider):
+    async def test_tokenRequester_runs_token_request(self, test_provider, uow):
         """Убедиться, что при запросе токена что-то приходит в ответ"""
-        uow = FakeUnitOfWork()
         auth = model.Authorization(
             grants=[model.Grant("authorization_code", "test_code")]
         )
@@ -202,12 +151,11 @@ class TestTokenRequest:
 
 
     @pytest.mark.asyncio
-    async def test_several_tokenRequests_return_different_tokens(self, test_provider):
+    async def test_several_tokenRequests_return_different_tokens(self, test_provider, uow):
         """Проверить, что при каждом новом запросе токена,
         приходит другой токен.
 
         То есть нет одинаковых токенов"""
-        uow = FakeUnitOfWork()
         auth = model.Authorization(
             grants=[
                 model.Grant("authorization_code", "test_code1"),
@@ -220,11 +168,10 @@ class TestTokenRequest:
         assert not token1.access_token == token2.access_token
 
     @pytest.mark.asyncio
-    async def test_tokenRequest_deactivates_old_token_and_old_grant(self, test_provider):
+    async def test_tokenRequest_deactivates_old_token_and_old_grant(self, test_provider, uow):
         """Проверить, что после запроса нового токена
         и гранта (токена обновления),
         старые токен и грант деактивированы"""
-        uow = FakeUnitOfWork()
         grant = model.Grant("refresh_token", "test_code")
         token = model.Token("test_access_token")
         auth = model.Authorization(grants=[grant], tokens=[token])
