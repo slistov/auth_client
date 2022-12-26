@@ -1,11 +1,10 @@
-from ..config import get_oauth_callback_URL
+from ..config import get_oauth_callback_URL, get_api_host
 from . import exceptions
 from ..domain import model
 
 from ..domain import commands
 from ..service_layer import unit_of_work
 from ..service_layer import messagebus
-from ..config import config
 
 from typing import List
 from urllib.parse import urlencode
@@ -31,9 +30,9 @@ class OAuthProvider:
         self.client_id = client_id
         self.client_secret = client_secret
 
-    async def get_authorize_uri(self):
+    async def get_authorize_uri(self, uow=None):
         assert self.code_url
-        uow = unit_of_work.SqlAlchemyUnitOfWork()
+        uow = unit_of_work.SqlAlchemyUnitOfWork() if not uow else uow
         cmd = commands.CreateAuthorization("origin")
         [state_code] = await messagebus.handle(cmd, uow)
         return self._get_oauth_uri(state_code)
@@ -50,11 +49,11 @@ class OAuthProvider:
         params = {
             "response_type": "code",
             "client_id": self.client_id,
-            "redirect_uri": config.get_oauth_callback_URL(),
+            "redirect_uri": get_oauth_callback_URL(),
             "scope": self.scopes,
             "state": state_code
         }
-        return f"{config.get_oauth_host()}?{urlencode(params)}"
+        return f"{self.code_url}?{urlencode(params)}"
 
     def _get_tokenRequest_data(self, grant):
         if grant.grant_type == "authorization_code":

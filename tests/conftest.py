@@ -13,6 +13,9 @@ from sqlalchemy.orm import sessionmaker, clear_mappers
 from oauth_client_lib.service_layer.oauth_provider import OAuthProvider
 from oauth_client_lib.adapters.orm import mapper_registry, start_mappers
 from oauth_client_lib import config
+from oauth_client_lib.adapters import repository
+from oauth_client_lib.service_layer import unit_of_work
+
 
 metadata = mapper_registry.metadata
 
@@ -138,3 +141,48 @@ def test_provider():
             client_id='test_client_id',
             client_secret='test_client_secret'
         )
+
+
+class FakeRepository(repository.AbstractRepository):
+    def __init__(self, authorizations):
+        super().__init__()
+        self._authorizations = set(authorizations)
+
+    def _add(self, authorization):
+        self._authorizations.add(authorization)
+
+    def _get_by_state(self, state):
+        return next(
+            (a for a in self._authorizations if state == a.state.state), None
+        )
+
+    def _get_by_grant_code(self, code):
+        return next(
+            (a for a in self._authorizations
+                for grant in a.grants if code == grant.code),
+            None
+        )
+
+    def _get_by_token(self, access_token):
+        return next(
+            (a for a in self._authorizations
+                for token in a.tokens if access_token == token.access_token),
+            None
+        )
+
+
+class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
+    def __init__(self):
+        self.authorizations = FakeRepository([])
+        self.committed = False
+
+    def _commit(self):
+        self.committed = True
+
+    def rollback(self):
+        pass
+
+
+@pytest.fixture
+def uow():
+    return FakeUnitOfWork()
