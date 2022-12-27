@@ -113,8 +113,7 @@ class FakeOAuthProvider(OAuthProvider):
             client_secret=client_secret
         )
 
-    async def request_token(self, grant):
-        data = self._get_tokenRequest_data(grant=grant)
+    async def _post(self, url, data):
         time.sleep(0.5)
         self.data = data
         self.response = requests.Response()

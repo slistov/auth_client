@@ -3,6 +3,9 @@ from urllib.parse import parse_qs, urlparse
 import pytest
 
 from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
+from src.oauth_client_lib.domain import model
+from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
+
 
 
 class TestOAuthProvider:
@@ -27,9 +30,19 @@ class TestOAuthProvider:
         params = parse_qs(parsed.query)
         assert params["state"][0] == 'some_state_code'
 
-    def test_exchanges_grant_for_token(self, test_provider: OAuthProvider):
-        token = test_provider.exchange_grant_for_token(code='test_code')
-        assert token == 'test_token'
+    @pytest.mark.asyncio
+    async def test_exchanges_grant_for_token(self, uow: AbstractUnitOfWork, test_provider: OAuthProvider):
+        grant = model.Grant('authorization_code', 'test_code')
+        auth = model.Authorization(state='test_state', grants=[grant, ])
+        uow.authorizations.add(auth=auth)
+
+        await test_provider.get_authorize_uri(uow=uow)
+        auth = uow.authorizations.get_by_grant_code(code='test_code')
+        grant = auth.get_active_grant()
+        response = await test_provider.request_token(grant=grant)
+        assert response.status_code == 200
+        assert response.json()['access_token'] == 'test_access_token_for_grant_test_code'
+        assert response.json()['refresh_token'] == 'test_refresh_token'
 
     def test_requests_email_using_token(self):
         pass
