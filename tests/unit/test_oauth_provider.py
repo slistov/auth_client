@@ -7,7 +7,6 @@ from src.oauth_client_lib.domain import model
 from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 
 
-
 class TestOAuthProvider:
     def test_creation(self, test_provider):
         assert test_provider.name == 'test_oauth_provider'

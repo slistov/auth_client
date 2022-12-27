@@ -149,7 +149,6 @@ class TestTokenRequest:
         token = auth.get_active_token()
         assert token.access_token == 'test_access_token_for_grant_test_code'
 
-
     @pytest.mark.asyncio
     async def test_several_tokenRequests_return_different_tokens(self, test_provider, uow):
         """Проверить, что при каждом новом запросе токена,
