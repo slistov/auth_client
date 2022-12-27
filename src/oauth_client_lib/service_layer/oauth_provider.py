@@ -9,6 +9,7 @@ from ..service_layer import messagebus
 from typing import List
 from urllib.parse import urlencode
 import aiohttp
+import requests
 
 
 class OAuthProvider:
@@ -37,9 +38,9 @@ class OAuthProvider:
         [state_code] = await messagebus.handle(cmd, uow)
         return self._get_oauth_uri(state_code)
 
-    async def request_token(self, grant):
+    async def request_token(self, grant) -> requests.Response:
         data = self._get_tokenRequest_data(grant=grant)
-        self.response = await post_async(
+        self.response = await self._post(
             url=self.token_url,
             data=data
         )
@@ -75,14 +76,11 @@ class OAuthProvider:
         })
         return data
 
-    def _post(self, endpoint, data):
-        response = self.oauth.post(endpoint, data)
-        if response.status_code >= 400:
-            raise exceptions.OAuthError(
-                f"OAuth endpoint: {endpoint}, data sent: {data}, service responded: {response.text}"
-            )
-        self.response = response
-        return self.response
+    async def _post(self, url, data):
+        return await post_async(
+            url=url,
+            data=data
+        )
 
     def get_token(self) -> model.Token:
         return model.Token(self._get_token_str())
