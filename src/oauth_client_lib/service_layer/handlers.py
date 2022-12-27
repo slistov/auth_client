@@ -67,7 +67,7 @@ async def request_token(
         old_token = auth.get_active_token()
         if old_token:
             old_token.deactivate()
-        
+
         oauth = cmd.oauth
         if not oauth:
             scopes, urls = config.get_oauth_params(auth.provider_name)
