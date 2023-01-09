@@ -3,17 +3,14 @@
 Команды и события генерируются в точках входа, см. /entrypoints
 """
 
-from ..domain import model, commands
-
-from .unit_of_work import AbstractUnitOfWork
-from . import exceptions
 from .. import config
-from . import oauth_provider
+from ..domain import commands, model
+from . import exceptions, oauth_provider, unit_of_work
 
 
 async def create_authorization(
     cmd: commands.CreateAuthorization,
-    uow: AbstractUnitOfWork
+    uow: unit_of_work.AbstractUnitOfWork
 ) -> str:
     with uow:
         state = model.State()
@@ -25,7 +22,7 @@ async def create_authorization(
 
 async def process_grant_recieved(
     cmd: commands.ProcessGrantRecieved,
-    uow: AbstractUnitOfWork
+    uow: unit_of_work.AbstractUnitOfWork
 ):
     """Обработчик команды Обработать код авторизации
     """
@@ -50,7 +47,7 @@ async def process_grant_recieved(
 
 async def request_token(
     cmd: commands.RequestToken,
-    uow: AbstractUnitOfWork
+    uow: unit_of_work.AbstractUnitOfWork
 ):
     with uow:
         auth = uow.authorizations.get_by_grant_code(cmd.grant_code)
