@@ -6,7 +6,6 @@ from ..domain import commands
 from ..service_layer import unit_of_work
 from ..service_layer import messagebus
 
-from typing import List
 from urllib.parse import urlencode
 import aiohttp
 import requests

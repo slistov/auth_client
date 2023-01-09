@@ -10,9 +10,7 @@ import logging
 from typing import List, Dict, Callable, Type, Union, TYPE_CHECKING
 from ..domain import commands, events
 from . import handlers
-
-if TYPE_CHECKING:
-    from . import unit_of_work
+from . import unit_of_work
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +68,7 @@ async def handle_command(
         result = await handler(command, uow=uow)
         queue.extend(uow.collect_new_events())
         return result
-    except Exception as e:
+    except Exception:
         logger.exception("Exception handling command %s", command)
         raise
 
