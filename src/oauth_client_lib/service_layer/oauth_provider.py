@@ -4,11 +4,11 @@ import aiohttp
 import json
 import requests
 
-from ..config import get_oauth_callback_URL
+from ..entrypoints.config import get_oauth_callback_URL
 from ..domain import commands, model
 from ..service_layer import messagebus, unit_of_work
 from . import exceptions
-from .. import config
+from ..entrypoints import config
 from ..adapters import orm
 
 orm.start_mappers()
