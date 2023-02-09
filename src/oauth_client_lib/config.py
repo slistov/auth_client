@@ -8,15 +8,18 @@ config = yaml.safe_load(open("config.yaml", mode="r", encoding="utf-8"))
 
 
 def get_postgres_uri():
-    host = os.environ.get("DB_HOST", "localhost")
-    port = 5432 if host == "localhost" else 5432
-    password = os.environ.get("DB_PASSWORD", "abc123")
-    user, db_name = "postgres", "client"
-    return f"postgresql://{user}:{password}@{host}:{port}/{db_name}"
+    oauth_db_uri = os.environ.get("OAUTH_DB_URI", "localhost")
+    return oauth_db_uri
 
 
 # LOGGING
 ERROR_LOG_FILENAME = config['ERROR_LOG_FILENAME']
+
+
+def get_oauth_secrets(provider_name):
+    with open(f'client_secret_{provider_name}.json') as f:
+        secrets = json.load(f)["web"]
+        return secrets["client_id"], secrets["client_secret"]
 
 
 def get_oauth_params(provider_name):
@@ -26,9 +29,7 @@ def get_oauth_params(provider_name):
     provider = providers[provider_name]
     scopes = provider['scopes']
     urls = provider['urls']
-    secrets = json.loads(os.environ['OAUTH_SECRETS'])
-    assert secrets[provider_name]
-    return scopes, urls, *secrets[provider_name]
+    return scopes, urls
 
 
 def get_api_host():
