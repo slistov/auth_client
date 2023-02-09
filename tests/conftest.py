@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker, clear_mappers
 
 from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
 from src.oauth_client_lib.adapters.orm import mapper_registry, start_mappers
-from src.oauth_client_lib.config import config
+from oauth_client_lib.entrypoints.config import config
 from src.oauth_client_lib.adapters import repository
 from src.oauth_client_lib.service_layer import unit_of_work
 

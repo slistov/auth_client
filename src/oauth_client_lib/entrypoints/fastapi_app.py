@@ -6,7 +6,7 @@ from ..service_layer import unit_of_work
 from ..service_layer import messagebus
 
 from ..adapters import orm
-from ..config import config
+from .config import config
 
 from . import schemas
 
