@@ -9,6 +9,7 @@
 """
 
 from typing import List
+from datetime import datetime
 
 from .state import State
 from .grant import Grant
@@ -24,6 +25,7 @@ class Authorization:
         tokens: List[Token] = None,
         user: User = None,
         is_active: bool = True,
+        created = None,
         provider_name: str = 'Own'
     ):
         self.state = state
@@ -32,9 +34,10 @@ class Authorization:
         self.tokens = tokens if tokens else []
         self.user = user if user else None
         self.is_active = is_active
+        self.created = created if created else datetime.utcnow()
         self.events = []
 
-    def get_grant_by_code(self, code: str):
+    def get_grant(self, code: str):
         return next(grant for grant in self.grants if grant.code == code)
 
     def get_active_grant(self):
