@@ -1,9 +1,10 @@
-import os
 import json
+import os
+import yaml
+
 from dotenv import load_dotenv
 load_dotenv()
 
-import yaml
 config = yaml.safe_load(open("config.yaml", mode="r", encoding="utf-8"))
 
 
