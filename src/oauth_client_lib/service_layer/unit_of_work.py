@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from .. import config
+from ..entrypoints import config
 from ..adapters import repository
 
 

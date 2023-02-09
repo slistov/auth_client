@@ -13,7 +13,7 @@ from typing import Callable, Dict, List, Type, Union
 from ..domain import commands, events
 from . import handlers, unit_of_work
 
-from .. import config
+from ..entrypoints import config
 from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
