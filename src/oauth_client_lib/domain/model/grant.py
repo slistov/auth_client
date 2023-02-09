@@ -1,5 +1,5 @@
-from typing import Union, Literal
 import datetime
+
 
 class Grant:
     def __init__(self, grant_type: str, code: str, is_active: bool = True) -> None:

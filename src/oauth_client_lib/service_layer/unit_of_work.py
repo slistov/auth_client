@@ -1,14 +1,14 @@
 # pylint: disable=attribute-defined-outside-init
 from __future__ import annotations
+
 import abc
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-
 from .. import config
 from ..adapters import repository
-from ..service_layer import oauth_provider
 
 
 class AbstractUnitOfWork(abc.ABC):
