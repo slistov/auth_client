@@ -44,7 +44,7 @@ states = Table(
     'states', mapper_registry.metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
     Column('auth_id', ForeignKey("authorizations.id")),
-    Column('code', String),
+    Column('state', String),
     Column('created', DateTime),
     Column('is_active', Boolean),
 )
@@ -64,6 +64,9 @@ tokens = Table(
     Column('id', Integer, primary_key=True, autoincrement=True),
     Column('auth_id', ForeignKey("authorizations.id")),
     Column('access_token', String),
+    Column('scope', String),
+    Column('token_type', String),
+    Column('id_token', String),
     Column('created', DateTime),
     Column('expires_in', Interval),
     Column('is_active', Boolean),
