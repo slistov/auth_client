@@ -5,14 +5,14 @@ with open("README.md", encoding='utf8') as file:
 
 setup(
     name="oauth-client-lib",
-    version="0.1.25",
+    version="0.1.26",
     author="Sergey Listov",
     author_email="slistov@mail.ru",
     description="OAuth2 client library",
     long_description=read_me_description,
     long_description_content_type="text/markdown",
     url="https://github.com/slistov/oauth_client_lib.git",
-    package_dir={'': 'src'},
+    # package_dir={'': 'src'},
     packages=find_packages(exclude=['tests']),
     install_requires=[
         'pytest',
