@@ -11,4 +11,3 @@ class TestRouter:
     def test_oauth_redirect_entrypoint(self):
         r = client.get("/oauth/redirect?provider=google")
         assert r.ok
-        
