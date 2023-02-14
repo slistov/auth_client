@@ -16,7 +16,7 @@ async def create_authorization(
         state = model.State()
         auth = model.Authorization(
             state=state,
-            provider_name=cmd.provider_name
+            provider=cmd.provider
         )
         uow.authorizations.add(auth)
         uow.commit()
@@ -91,9 +91,9 @@ async def request_token(
         # We could pass custom oauth for test purposes
         oauth = cmd.oauth
         if not oauth:
-            scopes, urls = config.get_oauth_params(auth.provider_name)
+            scopes, urls = config.get_oauth_params(auth.provider)
             oauth = oauth_provider.OAuthProvider(
-                provider_name=auth.provider_name,
+                provider=auth.provider,
                 scopes=scopes,
                 code_url=urls['code'],
                 token_url=urls['token'],
