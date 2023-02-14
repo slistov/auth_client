@@ -14,9 +14,9 @@ oauth_router = APIRouter(
 
 
 @oauth_router.get("/redirect")
-async def api_get_oauth_redirect_uri(provider_name):
+async def api_get_oauth_redirect_uri(provider):
     uow = unit_of_work.SqlAlchemyUnitOfWork()
-    cmd = commands.CreateAuthorization("origin", provider_name=provider_name)
+    cmd = commands.CreateAuthorization("origin", provider=provider)
     [state_code] = await messagebus.handle(cmd, uow)
     return await messagebus.get_oauth_uri(state_code)
 

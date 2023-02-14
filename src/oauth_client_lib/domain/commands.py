@@ -22,7 +22,7 @@ class Command:
 @dataclass
 class CreateAuthorization(Command):
     source_url: str
-    provider_name: str
+    provider: str
     # state_code: str
 
 

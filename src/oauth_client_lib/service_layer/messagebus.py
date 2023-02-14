@@ -22,8 +22,8 @@ Message = Union[commands.Command, events.Event]
 
 
 async def get_oauth_uri(state_code):
-    client_id, _ = config.get_oauth_secrets(provider_name='google')
-    scopes, urls = config.get_oauth_params(provider_name='google')
+    client_id, _ = config.get_oauth_secrets(provider='google')
+    scopes, urls = config.get_oauth_params(provider='google')
     redirect_uri = config.get_oauth_callback_URL()
     params = {
         "response_type": "code",

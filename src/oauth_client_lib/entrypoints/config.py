@@ -17,17 +17,17 @@ def get_postgres_uri():
 ERROR_LOG_FILENAME = config['ERROR_LOG_FILENAME']
 
 
-def get_oauth_secrets(provider_name):
-    with open(f'client_secret_{provider_name}.json') as f:
+def get_oauth_secrets(provider):
+    with open(f'client_secret_{provider}.json') as f:
         secrets = json.load(f)["web"]
         return secrets["client_id"], secrets["client_secret"]
 
 
-def get_oauth_params(provider_name):
-    assert config['oauth']['providers'][provider_name]['scopes']
-    assert config['oauth']['providers'][provider_name]['urls']
+def get_oauth_params(provider):
+    assert config['oauth']['providers'][provider]['scopes']
+    assert config['oauth']['providers'][provider]['urls']
     providers = config['oauth']['providers']
-    provider = providers[provider_name]
+    provider = providers[provider]
     scopes = provider['scopes']
     urls = provider['urls']
     return scopes, urls
