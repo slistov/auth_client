@@ -26,10 +26,10 @@ class Authorization:
         user: User = None,
         is_active: bool = True,
         created = None,
-        provider_name: str = 'Own'
+        provider: str = 'Own'
     ):
         self.state = state
-        self.provider_name = provider_name
+        self.provider = provider
         self.grants = grants if grants else []
         self.tokens = tokens if tokens else []
         self.user = user if user else None

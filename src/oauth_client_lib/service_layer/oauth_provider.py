@@ -17,7 +17,7 @@ orm.start_mappers()
 class OAuthProvider:
     def __init__(
         self,
-        provider_name,
+        provider,
         client_id='',
         client_secret='',
         code_url=None,
@@ -31,9 +31,9 @@ class OAuthProvider:
                 _code_url,
                 _token_url,
                 _public_keys_url
-            ) = self.__class__._get_provider_params(provider_name)
+            ) = self.__class__._get_provider_params(provider)
 
-        self.provider_name = provider_name
+        self.provider = provider
         self.code_url = code_url if code_url else _code_url
         self.token_url = token_url if token_url else _token_url
         self.scopes = scopes if scopes else _scopes
@@ -43,7 +43,7 @@ class OAuthProvider:
             (
                 _client_id,
                 _client_secret
-            ) = self.__class__._get_oauth_secrets(provider_name)
+            ) = self.__class__._get_oauth_secrets(provider)
         self.client_id = client_id if client_id else _client_id
         self.client_secret = client_secret if client_secret else _client_secret
 
@@ -65,11 +65,11 @@ class OAuthProvider:
     #     for msg in actions_todo:
     #         messagebus.handle(msg, uow)
 
-    #     return cls(a.provider_name)
+    #     return cls(a.provider)
 
     @staticmethod
-    def _get_oauth_secrets(provider_name):
-        with open(f'client_secret_{provider_name}.json') as f:
+    def _get_oauth_secrets(provider):
+        with open(f'client_secret_{provider}.json') as f:
             secrets = json.load(f)["web"]
             return secrets["client_id"], secrets["client_secret"]
 

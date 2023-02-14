@@ -7,3 +7,4 @@ __pycache__/
 .env
 *.egg-info/
 t.py
+client_secret*.json
