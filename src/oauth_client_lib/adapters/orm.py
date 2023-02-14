@@ -35,7 +35,7 @@ users = Table(
 authorizations = Table(
     'authorizations', mapper_registry.metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
-    Column('provider_name', String),
+    Column('provider', String),
     Column('created', DateTime),
     Column('is_active', Boolean),
 )
