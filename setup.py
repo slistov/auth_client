@@ -1,11 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open("README.md", encoding='utf8') as file:
     read_me_description = file.read()
 
 setup(
     name="oauth-client-lib",
-    version="0.1.22",
+    version="0.1.33",
     author="Sergey Listov",
     author_email="slistov@mail.ru",
     description="OAuth2 client library",
@@ -13,7 +13,10 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/slistov/oauth_client_lib.git",
     package_dir={'': 'src'},
-    packages=['oauth_client_lib'],
+    packages=find_packages(
+        where='src',
+        include=['oauth_client_lib', 'oauth_client_lib.*', ]
+    ),
     install_requires=[
         'pytest',
         'pytest-asyncio',
