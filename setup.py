@@ -5,7 +5,7 @@ with open("README.md", encoding='utf8') as file:
 
 setup(
     name="oauth-client-lib",
-    version="0.1.32",
+    version="0.1.33",
     author="Sergey Listov",
     author_email="slistov@mail.ru",
     description="OAuth2 client library",
@@ -14,6 +14,7 @@ setup(
     url="https://github.com/slistov/oauth_client_lib.git",
     package_dir={'': 'src'},
     packages=find_packages(
+        where='src',
         include=['oauth_client_lib', 'oauth_client_lib.*', ]
     ),
     install_requires=[
