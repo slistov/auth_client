@@ -1,4 +1,5 @@
 import datetime
+from secrets import token_urlsafe
 
 
 class State:
@@ -21,5 +22,8 @@ class State:
     def deactivate(self):
         self.is_active = False
 
+    def _generate_simple_token(self, len=None):
+        return token_urlsafe(len)
+
     def _generate_state(self):
-        return "some_state_code"
+        return self._generate_simple_token()
