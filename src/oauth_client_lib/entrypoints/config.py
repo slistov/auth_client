@@ -2,6 +2,8 @@ import json
 import os
 import yaml
 
+from fastapi import Depends
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -37,7 +39,6 @@ def get_api_host():
     return os.environ['API_HOST']
 
 
-def get_oauth_callback_URL():
-    base_url = get_api_host()
+def get_oauth_callback_URL(base_url=Depends(get_api_host)):
     callback_path = config['oauth']['callback']
     return f"{base_url}{callback_path}"

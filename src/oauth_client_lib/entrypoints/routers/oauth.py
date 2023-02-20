@@ -1,4 +1,3 @@
-from fastapi.exceptions import HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
 
@@ -19,7 +18,8 @@ async def api_get_oauth_redirect_uri(provider):
     cmd = commands.CreateAuthorization("origin", provider=provider)
     [state_code] = await messagebus.handle(cmd, uow)
     url = await messagebus.get_oauth_uri(state_code)
-    return url
+    # return url
+    return RedirectResponse(url=url)
 
 
 @oauth_router.get("/callback")
@@ -30,5 +30,6 @@ async def api_oauth_callback(state, code):
             grant_code=code,
         )
     results = await messagebus.handle(evt, uow)
+    assert results, "You should request new authorization code!"
     access_token = results[-1]
     return {"access_token": access_token}
