@@ -18,7 +18,8 @@ async def api_get_oauth_redirect_uri(provider):
     uow = unit_of_work.SqlAlchemyUnitOfWork()
     cmd = commands.CreateAuthorization("origin", provider=provider)
     [state_code] = await messagebus.handle(cmd, uow)
-    return await messagebus.get_oauth_uri(state_code)
+    url = await messagebus.get_oauth_uri(state_code)
+    return url
 
 
 @oauth_router.get("/callback")

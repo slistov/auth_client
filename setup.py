@@ -5,7 +5,7 @@ with open("README.md", encoding='utf8') as file:
 
 setup(
     name="oauth-client-lib",
-    version="0.1.33",
+    version="0.1.34",
     author="Sergey Listov",
     author_email="slistov@mail.ru",
     description="OAuth2 client library",
