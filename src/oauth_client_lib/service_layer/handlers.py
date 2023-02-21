@@ -38,6 +38,7 @@ async def auth_code_recieved(
     At the end, handler appends command
     for the Authorization: 'Now go and get your token!'
     """
+    raise exceptions.state_exceptions.InactiveState("State is inactive")
     with uow:
         auth = uow.authorizations.get(state_code=evt.state_code)
         state = auth.state
