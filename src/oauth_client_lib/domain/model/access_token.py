@@ -5,9 +5,9 @@ class Token:
     def __init__(
         self,
         access_token: str,
-        scope: str,
-        token_type: str,
-        id_token: str,
+        scope: str = [],
+        token_type: str = 'Bearer',
+        id_token: str = '',
         expires_in=3600,
         is_active: bool = True
     ) -> None:

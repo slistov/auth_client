@@ -155,7 +155,7 @@ class FakeRepository(repository.AbstractRepository):
             (a for a in self._authorizations if state == a.state.state), None
         )
 
-    def _get_by_grant_code(self, code):
+    def _get_by_grant(self, code):
         return next(
             (a for a in self._authorizations
                 for grant in a.grants if code == grant.code),

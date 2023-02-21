@@ -1,6 +1,6 @@
 # pylint: disable=no-self-use
 import pytest
-from src.oauth_client_lib.domain import commands
+from src.oauth_client_lib.domain import commands, events
 from src.oauth_client_lib.service_layer import (
     messagebus,
     exceptions
@@ -112,9 +112,12 @@ class TestAccessToken:
 
 class TestAttackHandling:
     @pytest.mark.asyncio
-    async def test_for_existing_authorization_inactive_STATECode_deactivates_authorization_completely(self, uow):
-        [state_code] = await messagebus.handle(commands.CreateAuthorization("source_url"), uow)
-        auth = uow.authorizations.get_by_state_code(state_code)
+    async def test_using_inactive_stateCode_deactivates_authorization_completely(self, uow):
+        [state_code] = await messagebus.handle(
+            commands.CreateAuthorization("source_url", "test_provider"),
+            uow
+        )
+        auth = uow.authorizations.get(state_code=state_code)
         grant = model.Grant("authorization_code", "test_code")
         auth.grants.append(grant)
 
@@ -127,8 +130,11 @@ class TestAttackHandling:
         assert token.is_active
 
         auth.state.deactivate()
-        with pytest.raises(exceptions.InactiveState, match="State is inactive"):
-            await messagebus.handle(commands.ProcessGrantRecieved(auth.state.state, "authorization_code", "test_code"), uow)
+        with pytest.raises(exceptions.state_exceptions.InactiveState, match="State is inactive"):
+            await messagebus.handle(events.AuthCodeRecieved(
+                state_code=auth.state.state,
+                grant_code="test_code"
+            ), uow)
 
         assert not auth.is_active
         assert not auth.state.is_active
