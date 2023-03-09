@@ -125,6 +125,9 @@ class FakeOAuthProvider(OAuthProvider):
         self.response._content = json.dumps(json_content).encode('utf-8')
         return self.response
 
+    def _get_oauth_callback_URL(self):
+        return 'https://test-client/api/oauth/callback'
+
 
 @pytest.fixture
 def test_provider():
