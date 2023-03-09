@@ -5,7 +5,7 @@ from sqlalchemy import pool
 
 from alembic import context
 from oauth_client_lib.adapters import orm
-from oauth_client_lib.config import get_postgres_uri
+from oauth_client_lib.entrypoints.config import get_postgres_uri
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
