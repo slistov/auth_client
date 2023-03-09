@@ -16,6 +16,7 @@ from oauth_client_lib.entrypoints.config import config
 from src.oauth_client_lib.adapters import repository
 from src.oauth_client_lib.service_layer import unit_of_work
 
+from src.oauth_client_lib.domain import model
 
 metadata = mapper_registry.metadata
 
@@ -93,18 +94,18 @@ class FakeOAuthProvider(OAuthProvider):
     Посылаем ему запросы, он должен что-нибудь ответить"""
     def __init__(
         self,
-        name,
         code_url,
         scopes,
         token_url,
         public_keys_url,
         client_id,
-        client_secret
+        client_secret,
+        access_token=''
     ) -> None:
         self.endpoint = None
         self.data = None
         super().__init__(
-            name=name,
+            provider='fake',
             code_url=code_url,
             scopes=scopes,
             token_url=token_url,
@@ -129,7 +130,6 @@ class FakeOAuthProvider(OAuthProvider):
 @pytest.fixture
 def test_provider():
     return FakeOAuthProvider(
-            name='test_oauth_provider',
             code_url='https://accounts.test.com/o/oauth2/v2/auth',
             scopes=[
                 'https://www.testapis.com/auth/userinfo.email',
@@ -183,5 +183,27 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
 
 
 @pytest.fixture
-def uow():
+def uow() -> FakeUnitOfWork:
     return FakeUnitOfWork()
+
+
+@pytest.fixture
+def id_token(test_provider):
+    return "test_id_token"
+
+@pytest.fixture
+def token(id_token) -> model.Token:
+    return model.Token(
+        access_token='test_access_token',
+        id_token=id_token
+    )
+
+
+@pytest.fixture
+def uow_with_auth(uow: FakeUnitOfWork, token):
+    with uow:
+        auth = model.Authorization(tokens=[token])
+        uow.authorizations.add(auth)
+        return uow
+
+# ya29.a0AVvZVspjtt07RKkJ9Yv2BIkrqlYzaLDvh8_iCu61eM6UmYv0CwzwJVwz813XOHVunpqiz8rBDfNIaWFHwApMQSEtqdNEYFQQi43Pv-KhAO67XtGZrK4xB_WhZHts0pdrIKwSCxaXMbJ__HbCAdhWLRW3puPq9xgaCgYKAXISARISFQGbdwaIDRRtbkRgPIV-mJuWQW1SCw0166
