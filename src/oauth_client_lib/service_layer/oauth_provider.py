@@ -17,7 +17,7 @@ orm.start_mappers()
 class OAuthProvider:
     def __init__(
         self,
-        provider,
+        name,
         client_id='',
         client_secret='',
         code_url=None,
@@ -31,9 +31,9 @@ class OAuthProvider:
                 _code_url,
                 _token_url,
                 _public_keys_url
-            ) = self.__class__._get_provider_params(provider)
+            ) = self.__class__._get_provider_params(name=name)
 
-        self.provider = provider
+        self.name = name
         self.code_url = code_url if code_url else _code_url
         self.token_url = token_url if token_url else _token_url
         self.scopes = scopes if scopes else _scopes
@@ -43,7 +43,7 @@ class OAuthProvider:
             (
                 _client_id,
                 _client_secret
-            ) = self.__class__._get_oauth_secrets(provider)
+            ) = self.__class__._get_oauth_secrets(self.name)
         self.client_id = client_id if client_id else _client_id
         self.client_secret = client_secret if client_secret else _client_secret
 
@@ -76,7 +76,7 @@ class OAuthProvider:
     async def get_authorize_uri(self, uow=None):
         assert self.code_url, "code_url is not provided"
         uow = unit_of_work.SqlAlchemyUnitOfWork() if not uow else uow
-        cmd = commands.CreateAuthorization("origin")
+        cmd = commands.CreateAuthorization(source_url="origin_url", provider=self.name)
         [state_code] = await messagebus.handle(cmd, uow)
         return self._get_oauth_uri(state_code)
 
@@ -98,12 +98,15 @@ class OAuthProvider:
         params = {
             "response_type": "code",
             "client_id": self.client_id,
-            "redirect_uri": get_oauth_callback_URL(),
+            "redirect_uri": self._get_oauth_callback_URL(),
             "scope": ' '.join(self.scopes),
             "state": state_code
         }
         uri = f"{self.code_url}?{urlencode(params,)}"
         return uri
+
+    def _get_oauth_callback_URL(self):
+        return get_oauth_callback_URL()
 
     def _get_data_for_token_request(self, grant):
         if grant.grant_type == "authorization_code":
