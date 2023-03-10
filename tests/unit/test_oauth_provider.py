@@ -53,5 +53,21 @@ class TestOAuthProvider:
         assert response.json()['access_token'] == 'test_access_token_for_grant_test_code'
         assert response.json()['refresh_token'] == 'test_refresh_token'
 
-    def test_requests_email_using_token(self):
-        pass
+    def test_return_email_using_token(
+        self,
+        uow: AbstractUnitOfWork,
+        test_provider: OAuthProvider
+    ):
+        token = model.Token(
+            access_token='test_access_token',
+            scope='test_scope',
+            token_type='Bearer',
+            id_token='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgdXNlciIsImlhdCI6MTUxNjIzOTAyMn0.cLFHUVEN9rjbcABNFWuUI77w9VNC8HL4NVCYhbSwELk'
+        )
+        auth = model.Authorization(tokens=[token, ])
+        uow.authorizations.add(auth)
+
+        email = test_provider.get_email(access_token=token.access_token)
+        assert email
+        assert email == 'test@mail.com'
+        
