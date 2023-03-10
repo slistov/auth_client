@@ -2,13 +2,12 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
-from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
 from src.oauth_client_lib.domain import model
 from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 
 
 class TestOAuthProvider:
-    def test_creation(self, test_provider):
+    def test_creation(self, test_provider: FakeOAuthProvider):
         assert test_provider.name == 'test_oauth_provider'
         assert test_provider.code_url == 'https://accounts.test.com/o/oauth2/v2/auth'
         assert test_provider.scopes == [
@@ -19,25 +18,23 @@ class TestOAuthProvider:
         assert test_provider.public_keys_url == 'https://www.testapis.com/oauth2/v3/certs'
 
     @pytest.mark.asyncio
-    async def test_returns_authorize_uri(self, uow, test_provider):
+    async def test_returns_authorize_uri(self, uow: FakeUnitOfWork, test_provider: FakeOAuthProvider):
         assert await test_provider.get_authorize_uri(uow=uow) == 'https://accounts.test.com/o/oauth2/v2/auth?response_type=code&client_id=test_client_id&redirect_uri=https%3A%2F%2Ftest-client%2Fapi%2Foauth%2Fcallback&scope=https%3A%2F%2Fwww.testapis.com%2Fauth%2Fuserinfo.email+openid&state=some_state_code'
 
     @pytest.mark.asyncio
-    async def test_authorize_uri_contains_state(self, uow, test_provider: OAuthProvider):
+    async def test_authorize_uri_contains_state(self, uow: FakeUnitOfWork, test_provider: FakeOAuthProvider):
         url = await test_provider.get_authorize_uri(uow=uow)
         parsed = urlparse(url=url)
         params = parse_qs(parsed.query)
         assert params["state"][0] == 'some_state_code'
 
     @pytest.mark.asyncio
-    async def test_exchanges_grant_for_token(self, uow: AbstractUnitOfWork, test_provider: OAuthProvider):
+    async def test_exchanges_grant_for_token(self, uow: AbstractUnitOfWork, test_provider: FakeOAuthProvider):
         grant = model.Grant('authorization_code', 'test_code')
-        auth = model.Authorization(state='test_state', grants=[grant, ])
+        state = model.State('test_state')
+        auth = model.Authorization(state=state, grants=[grant, ])
         uow.authorizations.add(auth=auth)
 
-        await test_provider.get_authorize_uri(uow=uow)
-        auth = uow.authorizations.get_by_grant_code(code='test_code')
-        grant = auth.get_active_grant()
         response = await test_provider.request_token(grant=grant)
         assert response.status_code == 200
         assert response.json()['access_token'] == 'test_access_token_for_grant_test_code'

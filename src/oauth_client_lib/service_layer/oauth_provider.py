@@ -6,6 +6,7 @@ import requests
 
 from ..entrypoints.config import get_oauth_callback_URL
 from ..domain import commands, model
+from fastapi.responses import JSONResponse
 from ..service_layer import messagebus, unit_of_work
 from . import exceptions
 from ..entrypoints import config
@@ -87,7 +88,7 @@ class OAuthProvider:
             data=data
         )
         if response.ok:
-            return await response.json()
+            return response
 
     @staticmethod
     def _get_provider_params(name):
@@ -112,7 +113,7 @@ class OAuthProvider:
         if grant.grant_type == "authorization_code":
             data = {
                 "code": grant.code,
-                "redirect_uri": get_oauth_callback_URL()
+                "redirect_uri": self._get_oauth_callback_URL()
             }
         elif grant.grant_type == "refresh_token":
             data = {"refresh_token": grant.code}
