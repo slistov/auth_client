@@ -93,15 +93,16 @@ async def request_token(
         if not oauth:
             scopes, urls = config.get_oauth_params(auth.provider)
             oauth = oauth_provider.OAuthProvider(
-                provider=auth.provider,
+                name=auth.provider,
                 scopes=scopes,
                 code_url=urls['code'],
                 token_url=urls['token'],
                 public_keys_url=urls['public_keys']
             )
-        r = await oauth.request_token(grant=old_grant)
+        resp = await oauth.request_token(grant=old_grant)
+        r = await resp.json()
 
-        if not r:
+        if not resp.ok:
             raise exceptions.OAuthError("Couldn't request token")
 
         new_token = model.Token(**r)
