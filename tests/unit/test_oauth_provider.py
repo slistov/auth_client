@@ -7,6 +7,8 @@ from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
 
 
+from jose import utils
+
 class TestOAuthProvider:
     def test_creation(self, test_provider: OAuthProvider):
         assert test_provider.name == 'test_oauth_provider'
@@ -71,3 +73,20 @@ class TestOAuthProvider:
         assert email
         assert email == 'test@mail.com'
         
+
+class TestUserInfo:
+    def test_get_email_idToken(self, test_provider, token: model.Token):
+        """Get email from token's id_token
+
+        Provider's token has id_token.
+        id_token is JWT: email - inside it, just unpack!
+        Ex.:
+            https://developers.google.com/identity/sign-in/web/backend-auth"""
+        test_provider.access_token=token.access_token
+
+        import hashlib
+        at_hash = utils.calculate_at_hash("test_access_token", hashlib.sha256)
+        email = p.get_email()
+        assert email == token_id_token.get_email()
+
+    # def test_get_email_noIdToken(self, token_w):
