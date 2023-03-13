@@ -38,8 +38,7 @@ async def test_request_token(test_provider, uow, params):
         oauth=test_provider
     )
     token = await handlers.request_token(cmd=cmd, uow=uow)
-    assert token 
-
+    assert token
 
 # class TestAuthorization:
 #     @pytest.mark.asyncio
