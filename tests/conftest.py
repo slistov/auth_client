@@ -15,6 +15,8 @@ from src.oauth_client_lib.adapters.orm import mapper_registry, start_mappers
 from oauth_client_lib.entrypoints.config import config
 from src.oauth_client_lib.adapters import repository
 from src.oauth_client_lib.service_layer import unit_of_work
+from src.oauth_client_lib.domain import model
+from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 
 
 metadata = mapper_registry.metadata
@@ -120,7 +122,10 @@ class FakeOAuthProvider(OAuthProvider):
         self.response.status_code = 200
         json_content = {
             "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}",
-            "refresh_token": "test_refresh_token"
+            "refresh_token": "test_refresh_token",
+            "scope": "test_scope",
+            "token_type": "Bearer",
+            "id_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgdXNlciIsImlhdCI6MTUxNjIzOTAyMn0.cLFHUVEN9rjbcABNFWuUI77w9VNC8HL4NVCYhbSwELk'"
         }
         self.response._content = json.dumps(json_content).encode('utf-8')
         return self.response
@@ -185,6 +190,14 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
         pass
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def uow():
     return FakeUnitOfWork()
+
+
+@pytest.fixture(scope="module")
+def params():
+    return {
+        "state_code": "",
+        "grant_code": ""
+    }
