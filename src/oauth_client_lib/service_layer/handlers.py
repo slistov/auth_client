@@ -61,6 +61,7 @@ async def auth_code_recieved(
         auth.events.append(
             commands.RequestToken(grant_code=grant.code),
         )
+        return grant.code
 
 
 async def request_token(
@@ -80,7 +81,7 @@ async def request_token(
         old_grant = auth.get_active_grant()
         if not old_grant:
             raise exceptions.InvalidGrant(
-                "No active grant found to request token"
+                "No active grant for token request"
             )
         old_grant.deactivate()
 
@@ -99,12 +100,11 @@ async def request_token(
                 token_url=urls['token'],
                 public_keys_url=urls['public_keys']
             )
-        resp = await oauth.request_token(grant=old_grant)
-        r = await resp.json()
-
-        if not resp.ok:
+        response = await oauth.request_token(grant=old_grant)
+        if not response.ok:
             raise exceptions.OAuthError("Couldn't request token")
 
+        r = response.json()
         new_token = model.Token(**r)
         auth.tokens.append(new_token)
 
