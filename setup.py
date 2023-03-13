@@ -27,7 +27,8 @@ setup(
         'psycopg2==2.9.3',
         'python-dotenv==0.21.0',
         'aiohttp==3.8.3',
-        'sqlalchemy_json'
+        'sqlalchemy_json',
+        'python-jose'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
