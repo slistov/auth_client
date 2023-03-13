@@ -62,6 +62,7 @@ async def auth_code_recieved(
         auth.events.append(
             commands.RequestToken(grant_code=grant.code),
         )
+        return grant.code
 
 
 async def request_token(
@@ -81,7 +82,7 @@ async def request_token(
         old_grant = auth.get_active_grant()
         if not old_grant:
             raise exceptions.InvalidGrant(
-                "No active grant found to request token"
+                "No active grant for token request"
             )
         old_grant.deactivate()
 
@@ -94,17 +95,17 @@ async def request_token(
         if not oauth:
             scopes, urls = config.get_oauth_params(auth.provider)
             oauth = oauth_provider.OAuthProvider(
-                provider=auth.provider,
+                name=auth.provider,
                 scopes=scopes,
                 code_url=urls['code'],
                 token_url=urls['token'],
                 public_keys_url=urls['public_keys']
             )
-        r = await oauth.request_token(grant=old_grant)
-
-        if not r:
+        response = await oauth.request_token(grant=old_grant)
+        if not response.ok:
             raise exceptions.OAuthError("Couldn't request token")
 
+        r = response.json()
         new_token = model.Token(**r)
         auth.tokens.append(new_token)
 

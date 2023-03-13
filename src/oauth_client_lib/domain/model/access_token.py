@@ -5,11 +5,12 @@ class Token:
     def __init__(
         self,
         access_token: str,
-        scope: str = [],
-        token_type: str = 'Bearer',
+        token_type: str,
+        scope: str = '',
         id_token: str = '',
         expires_in=3600,
-        is_active: bool = True
+        is_active: bool = True,
+        **kwargs
     ) -> None:
         self.access_token = access_token
         self.scope = scope

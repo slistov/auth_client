@@ -39,6 +39,8 @@ def upgrade() -> None:
     sa.Column('access_token', sa.String(), nullable=True),
     sa.Column('created', sa.DateTime(), nullable=True),
     sa.Column('expires_in', sa.Interval, nullable=True),
+    sa.Column('scope', sa.String(), nullable=True),
+    sa.Column('token_type', sa.String(), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.ForeignKeyConstraint(['auth_id'], ['authorizations.id'], ),
     sa.PrimaryKeyConstraint('id')

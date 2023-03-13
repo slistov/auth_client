@@ -1,6 +1,8 @@
 import datetime
 from secrets import token_urlsafe
 
+from secrets import token_urlsafe
+
 
 class State:
     """Обслуживание state
@@ -8,7 +10,7 @@ class State:
     State-код отправляется на сервис авторизации при ЗАПРОСЕ кода авторизации,
     а также принимается от сервиса авторизации при ПОЛУЧЕНИИ кода авторизации.
 
-    Бизнес-правило: state-код нельзя использовать дважды
+    Бизнес-оограничение: state-код нельзя использовать дважды
 
     Модель используется в п.1-2  полного сценария, см. README.md"""
     def __init__(self, state: str = None) -> None:

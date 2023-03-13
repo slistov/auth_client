@@ -31,3 +31,11 @@
 # Oauth2.0 client
 
 The app gets token from oauth service according to oauth2.0 specs.
+
+There must be variables in your environment (use .env file, for example):
+
+OAUTH_DB_URI - postgres db connection for oauth purposes (grants, tokens, etc..)
+
+Ex.:
+
+    OAUTH_DB_URI=postgresql://user:pwd123@localhost:5432/oauth

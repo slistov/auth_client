@@ -6,6 +6,7 @@ import requests
 
 from ..entrypoints.config import get_oauth_callback_URL
 from ..domain import commands, model
+from fastapi.responses import JSONResponse
 from ..service_layer import messagebus, unit_of_work
 from . import exceptions
 from ..entrypoints import config
@@ -17,7 +18,7 @@ orm.start_mappers()
 class OAuthProvider:
     def __init__(
         self,
-        provider,
+        name,
         client_id='',
         client_secret='',
         code_url=None,
@@ -31,9 +32,9 @@ class OAuthProvider:
                 _code_url,
                 _token_url,
                 _public_keys_url
-            ) = self.__class__._get_provider_params(provider)
+            ) = self.__class__._get_provider_params(name=name)
 
-        self.provider = provider
+        self.name = name
         self.code_url = code_url if code_url else _code_url
         self.token_url = token_url if token_url else _token_url
         self.scopes = scopes if scopes else _scopes
@@ -43,7 +44,7 @@ class OAuthProvider:
             (
                 _client_id,
                 _client_secret
-            ) = self.__class__._get_oauth_secrets(provider)
+            ) = self.__class__._get_oauth_secrets(self.name)
         self.client_id = client_id if client_id else _client_id
         self.client_secret = client_secret if client_secret else _client_secret
 
@@ -76,7 +77,7 @@ class OAuthProvider:
     async def get_authorize_uri(self, uow=None):
         assert self.code_url, "code_url is not provided"
         uow = unit_of_work.SqlAlchemyUnitOfWork() if not uow else uow
-        cmd = commands.CreateAuthorization("origin")
+        cmd = commands.CreateAuthorization(source_url="origin_url", provider=self.name)
         [state_code] = await messagebus.handle(cmd, uow)
         return self._get_oauth_uri(state_code)
 
@@ -87,18 +88,21 @@ class OAuthProvider:
             data=data
         )
         if response.ok:
-            return await response.json()
+            return response
 
     @staticmethod
     def _get_provider_params(name):
         scopes, urls = config.get_oauth_params(name)
         return scopes, urls['code'], urls['token'], urls['public_keys']
 
+    def _get_oauth_callback_URL(self):
+        return get_oauth_callback_URL()
+
     def _get_oauth_uri(self, state_code):
         params = {
             "response_type": "code",
             "client_id": self.client_id,
-            "redirect_uri": get_oauth_callback_URL(),
+            "redirect_uri": self._get_oauth_callback_URL(),
             "scope": ' '.join(self.scopes),
             "state": state_code
         }
@@ -109,7 +113,7 @@ class OAuthProvider:
         if grant.grant_type == "authorization_code":
             data = {
                 "code": grant.code,
-                "redirect_uri": get_oauth_callback_URL()
+                "redirect_uri": self._get_oauth_callback_URL()
             }
         elif grant.grant_type == "refresh_token":
             data = {"refresh_token": grant.code}
@@ -132,6 +136,9 @@ class OAuthProvider:
             url=url,
             data=data
         )
+
+    async def get_email(self):
+        return self.auth
 
     # async def get_token(self) -> model.Token:
     #     return model.Token(await self._get_token_str())

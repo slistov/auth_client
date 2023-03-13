@@ -15,6 +15,8 @@ from src.oauth_client_lib.adapters.orm import mapper_registry, start_mappers
 from oauth_client_lib.entrypoints.config import config
 from src.oauth_client_lib.adapters import repository
 from src.oauth_client_lib.service_layer import unit_of_work
+from src.oauth_client_lib.domain import model
+from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 
 from src.oauth_client_lib.domain import model
 
@@ -121,10 +123,16 @@ class FakeOAuthProvider(OAuthProvider):
         self.response.status_code = 200
         json_content = {
             "access_token": f"test_access_token_for_grant_{data.get('code', data.get('refresh_token'))}",
-            "refresh_token": "test_refresh_token"
+            "refresh_token": "test_refresh_token",
+            "scope": "test_scope",
+            "token_type": "Bearer",
+            "id_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgdXNlciIsImlhdCI6MTUxNjIzOTAyMn0.cLFHUVEN9rjbcABNFWuUI77w9VNC8HL4NVCYhbSwELk'"
         }
         self.response._content = json.dumps(json_content).encode('utf-8')
         return self.response
+
+    def _get_oauth_callback_URL(self):
+        return 'https://test-client/api/oauth/callback'
 
 
 @pytest.fixture
@@ -182,28 +190,14 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
         pass
 
 
-@pytest.fixture
-def uow() -> FakeUnitOfWork:
+@pytest.fixture(scope="module")
+def uow():
     return FakeUnitOfWork()
 
 
-@pytest.fixture
-def id_token(test_provider):
-    return "test_id_token"
-
-@pytest.fixture
-def token(id_token) -> model.Token:
-    return model.Token(
-        access_token='test_access_token',
-        id_token=id_token
-    )
-
-
-@pytest.fixture
-def uow_with_auth(uow: FakeUnitOfWork, token):
-    with uow:
-        auth = model.Authorization(tokens=[token])
-        uow.authorizations.add(auth)
-        return uow
-
-# ya29.a0AVvZVspjtt07RKkJ9Yv2BIkrqlYzaLDvh8_iCu61eM6UmYv0CwzwJVwz813XOHVunpqiz8rBDfNIaWFHwApMQSEtqdNEYFQQi43Pv-KhAO67XtGZrK4xB_WhZHts0pdrIKwSCxaXMbJ__HbCAdhWLRW3puPq9xgaCgYKAXISARISFQGbdwaIDRRtbkRgPIV-mJuWQW1SCw0166
+@pytest.fixture(scope="module")
+def params():
+    return {
+        "state_code": "",
+        "grant_code": ""
+    }
