@@ -9,7 +9,8 @@ class Token:
         token_type: str,
         id_token: str,
         expires_in=3600,
-        is_active: bool = True
+        is_active: bool = True,
+        **kwargs
     ) -> None:
         self.access_token = access_token
         self.scope = scope

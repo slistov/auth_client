@@ -95,6 +95,9 @@ class OAuthProvider:
         scopes, urls = config.get_oauth_params(name)
         return scopes, urls['code'], urls['token'], urls['public_keys']
 
+    def _get_oauth_callback_URL(self):
+        return get_oauth_callback_URL()
+
     def _get_oauth_uri(self, state_code):
         params = {
             "response_type": "code",
@@ -105,9 +108,6 @@ class OAuthProvider:
         }
         uri = f"{self.code_url}?{urlencode(params,)}"
         return uri
-
-    def _get_oauth_callback_URL(self):
-        return get_oauth_callback_URL()
 
     def _get_data_for_token_request(self, grant):
         if grant.grant_type == "authorization_code":
@@ -136,6 +136,9 @@ class OAuthProvider:
             url=url,
             data=data
         )
+
+    async def get_email(self):
+        return self.auth
 
     # async def get_token(self) -> model.Token:
     #     return model.Token(await self._get_token_str())
