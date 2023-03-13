@@ -25,7 +25,7 @@ class Authorization:
         tokens: List[Token] = None,
         user: User = None,
         is_active: bool = True,
-        created = None,
+        created=None,
         provider: str = 'Own'
     ):
         self.state = state
