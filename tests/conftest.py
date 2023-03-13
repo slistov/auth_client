@@ -18,6 +18,7 @@ from src.oauth_client_lib.service_layer import unit_of_work
 from src.oauth_client_lib.domain import model
 from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 
+from src.oauth_client_lib.domain import model
 
 metadata = mapper_registry.metadata
 
@@ -95,18 +96,18 @@ class FakeOAuthProvider(OAuthProvider):
     Посылаем ему запросы, он должен что-нибудь ответить"""
     def __init__(
         self,
-        name,
         code_url,
         scopes,
         token_url,
         public_keys_url,
         client_id,
-        client_secret
+        client_secret,
+        access_token=''
     ) -> None:
         self.endpoint = None
         self.data = None
         super().__init__(
-            name=name,
+            provider='fake',
             code_url=code_url,
             scopes=scopes,
             token_url=token_url,
@@ -137,7 +138,6 @@ class FakeOAuthProvider(OAuthProvider):
 @pytest.fixture
 def test_provider():
     return FakeOAuthProvider(
-            name='test_oauth_provider',
             code_url='https://accounts.test.com/o/oauth2/v2/auth',
             scopes=[
                 'https://www.testapis.com/auth/userinfo.email',
@@ -163,7 +163,7 @@ class FakeRepository(repository.AbstractRepository):
             (a for a in self._authorizations if state == a.state.state), None
         )
 
-    def _get_by_grant_code(self, code):
+    def _get_by_grant(self, code):
         return next(
             (a for a in self._authorizations
                 for grant in a.grants if code == grant.code),

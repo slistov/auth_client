@@ -47,7 +47,7 @@ class AbstractRepository(abc.ABC):
         if token:
             return self._get_by_token(token)
         if grant_code:
-            return self._get_by_grant_code(grant_code)
+            return self._get_by_grant(grant_code)
         if state_code:
             return self._get_by_state(state_code)
 
@@ -60,7 +60,7 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def _get_by_grant_code(self, code) -> model.Authorization:
+    def _get_by_grant(self, code) -> model.Authorization:
         raise NotImplementedError
 
     @abc.abstractmethod
