@@ -13,8 +13,7 @@ from datetime import datetime
 
 from .state import State
 from .grant import Grant
-from .access_token import Token
-# from .user import User
+from .token import Token
 
 
 class Authorization:
@@ -25,7 +24,7 @@ class Authorization:
         tokens: List[Token] = None,
         is_active: bool = True,
         created=None,
-        provider: str = 'Own'
+        provider: str = "Own",
     ):
         self.state = state
         self.provider = provider
