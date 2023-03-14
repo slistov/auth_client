@@ -6,7 +6,6 @@ from src.oauth_client_lib.domain import model
 from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
 
-
 from jose import utils
 
 class TestOAuthProvider:
@@ -75,7 +74,7 @@ class TestOAuthProvider:
         
 
 class TestUserInfo:
-    def test_get_email_idToken(self, test_provider, token: model.Token):
+    def test_get_email_idToken(self, test_provider: OAuthProvider, token: model.Token):
         """Get email from token's id_token
 
         Provider's token has id_token.
