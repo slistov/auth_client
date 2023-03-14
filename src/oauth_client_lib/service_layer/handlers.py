@@ -2,30 +2,27 @@
 
 Команды и события генерируются в точках входа, см. /entrypoints
 """
+from urllib.parse import urlencode
 
 from ..entrypoints import config
+
 from ..domain import commands, events, model
 from . import exceptions, oauth_provider, unit_of_work
 
 
 async def create_authorization(
-    cmd: commands.CreateAuthorization,
-    uow: unit_of_work.AbstractUnitOfWork
+    cmd: commands.CreateAuthorization, uow: unit_of_work.AbstractUnitOfWork
 ) -> str:
     with uow:
         state = model.State()
-        auth = model.Authorization(
-            state=state,
-            provider=cmd.provider
-        )
+        auth = model.Authorization(state=state, provider=cmd.provider)
         uow.authorizations.add(auth)
         uow.commit()
         return state.state
 
 
 async def auth_code_recieved(
-    evt: events.AuthCodeRecieved,
-    uow: unit_of_work.AbstractUnitOfWork
+    evt: events.AuthCodeRecieved, uow: unit_of_work.AbstractUnitOfWork
 ):
     """Process authorization code recieved
 
@@ -51,10 +48,7 @@ async def auth_code_recieved(
         state.deactivate()
 
         # Authorization code is a grant to request token
-        grant = model.Grant(
-            grant_type="authorization_code",
-            code=evt.grant_code
-        )
+        grant = model.Grant(grant_type="authorization_code", code=evt.grant_code)
         auth.grants.append(grant)
         uow.commit()
         # Now, authorization must get access token using the auth code
@@ -65,24 +59,17 @@ async def auth_code_recieved(
 
 
 async def request_token(
-    cmd: commands.RequestToken,
-    uow: unit_of_work.AbstractUnitOfWork
+    cmd: commands.RequestToken, uow: unit_of_work.AbstractUnitOfWork
 ):
-    """Request token from OAuth2 provider
-    """
+    """Request token from OAuth2 provider"""
     with uow:
-        auth = uow.authorizations.get(
-            grant_code=cmd.grant_code,
-            token=cmd.token
-        )
+        auth = uow.authorizations.get(grant_code=cmd.grant_code, token=cmd.token)
         if not auth:
             raise exceptions.OAuthError("No active authorization found")
 
         old_grant = auth.get_active_grant()
         if not old_grant:
-            raise exceptions.InvalidGrant(
-                "No active grant for token request"
-            )
+            raise exceptions.InvalidGrant("No active grant for token request")
         old_grant.deactivate()
 
         old_token = auth.get_active_token()
@@ -96,9 +83,9 @@ async def request_token(
             oauth = oauth_provider.OAuthProvider(
                 name=auth.provider,
                 scopes=scopes,
-                code_url=urls['code'],
-                token_url=urls['token'],
-                public_keys_url=urls['public_keys']
+                code_url=urls["code"],
+                token_url=urls["token"],
+                public_keys_url=urls["public_keys"],
             )
         response = await oauth.request_token(grant=old_grant)
         if not response.ok:
@@ -109,11 +96,22 @@ async def request_token(
         auth.tokens.append(new_token)
 
         if "refresh_token" in r:
-            new_grant = model.Grant(
-                grant_type="refresh_token",
-                code=r["refresh_token"]
-            )
+            new_grant = model.Grant(grant_type="refresh_token", code=r["refresh_token"])
             auth.grants.append(new_grant)
 
         uow.commit()
         return new_token.access_token
+
+
+async def get_oauth_uri(state_code):
+    client_id, _ = config.get_oauth_secrets(provider="google")
+    scopes, urls = config.get_oauth_params(provider="google")
+    redirect_uri = config.get_oauth_callback_URL()
+    params = {
+        "response_type": "code",
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "scope": " ".join(scopes),
+        "state": state_code,
+    }
+    return f"{urls['code']}?{urlencode(params)}"
