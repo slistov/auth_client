@@ -12,7 +12,8 @@ from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 
 
 @pytest.mark.asyncio
-async def test_create_authorization(uow, params):
+async def test_create_authorization_returns_state_code(uow, params):
+    """Handler create_authorization being tested"""
     cmd = commands.CreateAuthorization(
         source_url="origin",
         provider="test_provider"
@@ -22,7 +23,8 @@ async def test_create_authorization(uow, params):
     assert state
 
 @pytest.mark.asyncio
-async def test_auth_code_recieved(uow, params):
+async def test_auth_code_recieved_returns_auth_code(uow, params):
+    """Handler auth_code_recieved being tested"""
     evt = events.AuthCodeRecieved(
         grant_code="test_code",
         state_code=params["state_code"]
@@ -32,7 +34,8 @@ async def test_auth_code_recieved(uow, params):
     assert code
 
 @pytest.mark.asyncio
-async def test_request_token(test_provider, uow, params):
+async def test_request_token_returns_token(test_provider, uow, params):
+    """Handler request_token being tested"""    
     cmd = commands.RequestToken(
         grant_code=params["grant_code"],
         oauth=test_provider
