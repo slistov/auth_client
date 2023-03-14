@@ -84,7 +84,7 @@ class SQLAlchemyRepository(AbstractRepository):
             .first()
         )
 
-    def _get_by_grant_code(self, code) -> model.Authorization:
+    def _get_by_grant(self, code) -> model.Authorization:
         return (
             self.session.query(model.Authorization)
             .join(model.Grant)
