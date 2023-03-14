@@ -24,25 +24,25 @@ def test_when_authorization_deactivates_it_also_deactivates_its_state_grants_and
     assert not token.is_active
 
 
-# def test_token_request_adds_token_and_grant(fake_token_requester):
-#     state, grant, token, auth = create_auth_data()
+def test_token_request_adds_token_and_grant(fake_token_requester):
+    state, grant, token, auth = create_auth_data()
 
-#     assert len(auth.grants) == 1
-#     assert len(auth.tokens) == 1    
+    assert len(auth.grants) == 1
+    assert len(auth.tokens) == 1    
 
-#     auth.request_token(fake_token_requester)
+    auth.request_token(fake_token_requester)
 
-#     assert len(auth.grants) == 2
-#     assert len(auth.tokens) == 2
+    assert len(auth.grants) == 2
+    assert len(auth.tokens) == 2
 
 
-# def test_token_request_deactivates_old_grant_and_token(fake_token_requester):
-#     state, grant, token, auth = create_auth_data()
+def test_token_request_deactivates_old_grant_and_token(fake_token_requester):
+    state, grant, token, auth = create_auth_data()
 
-#     assert grant.is_active
-#     assert token.is_active
+    assert grant.is_active
+    assert token.is_active
 
-#     auth.request_token(fake_token_requester)
+    auth.request_token(fake_token_requester)
 
-#     assert not grant.is_active
-#     assert not token.is_active
+    assert not grant.is_active
+    assert not token.is_active
