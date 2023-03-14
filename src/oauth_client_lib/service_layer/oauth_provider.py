@@ -48,26 +48,6 @@ class OAuthProvider:
         self.client_id = client_id if client_id else _client_id
         self.client_secret = client_secret if client_secret else _client_secret
 
-    # @classmethod
-    # def by_state(cls, state):
-    #     """OAuthProvider constructor by state"""
-    #     s = model.State(state)
-    #     a = model.Authorization(state=s)
-
-    #     uow = unit_of_work.SqlAlchemyUnitOfWork()
-    #     actions_todo = [
-    #         commands.ProcessGrantRecieved(
-    #             params.state,
-    #             "authorization_code",
-    #             params.code
-    #         ),
-    #         commands.RequestToken(params.code)
-    #     ]
-    #     for msg in actions_todo:
-    #         messagebus.handle(msg, uow)
-
-    #     return cls(a.provider)
-
     @staticmethod
     def _get_oauth_secrets(provider):
         with open(f'client_secret_{provider}.json') as f:
