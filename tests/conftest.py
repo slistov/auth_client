@@ -107,7 +107,7 @@ class FakeOAuthProvider(OAuthProvider):
         self.endpoint = None
         self.data = None
         super().__init__(
-            provider='fake',
+            name='fake',
             code_url=code_url,
             scopes=scopes,
             token_url=token_url,
