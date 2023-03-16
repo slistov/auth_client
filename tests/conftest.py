@@ -202,3 +202,35 @@ def uow():
 @pytest.fixture(scope="module")
 def params():
     return {"state_code": "", "grant_code": ""}
+
+
+from fastapi.testclient import TestClient
+from oauth_client_lib import oauth_router
+from oauth_client_lib.entrypoints.fastapi_app import app
+from oauth_client_lib.entrypoints.routers.oauth import get_provider, get_uow
+
+app.include_router(oauth_router)
+
+
+def fake_provider():
+    return FakeOAuthProvider(
+        code_url="https://accounts.test.com/o/oauth2/v2/auth",
+        scopes=["https://www.testapis.com/auth/userinfo.email", "openid"],
+        token_url="https://oauth2.testapis.com/token",
+        public_keys_url="https://www.testapis.com/oauth2/v3/certs",
+        client_id="test_client_id",
+        client_secret="test_client_secret",
+    )
+
+
+def fake_uow():
+    return FakeUnitOfWork()
+
+
+app.dependency_overrides[get_provider] = fake_provider
+app.dependency_overrides[get_uow] = fake_uow
+
+
+@pytest.fixture(scope="function")
+def client():
+    return TestClient(app)

@@ -56,11 +56,7 @@ class OAuthProvider:
             secrets = json.load(f)["web"]
             return secrets["client_id"], secrets["client_secret"]
 
-    async def get_authorize_uri(self, uow=None):
-        assert self.code_url, "code_url is not provided"
-        uow = unit_of_work.SqlAlchemyUnitOfWork() if not uow else uow
-        cmd = commands.CreateAuthorization(source_url="origin_url", provider=self.name)
-        [state_code] = await messagebus.handle(cmd, uow)
+    async def get_authorize_uri(self, state_code):
         return self._get_oauth_uri(state_code)
 
     async def request_token(self, grant) -> requests.Response:
