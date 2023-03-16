@@ -83,7 +83,9 @@ def postgres_session(postgres_session_factory):
 
 @pytest.fixture
 def restart_api():
-    (Path(__file__).parent / "../src/oauth_client_lib/entrypoints/fastapi_app.py").touch()
+    (
+        Path(__file__).parent / "../src/oauth_client_lib/entrypoints/fastapi_app.py"
+    ).touch()
     time.sleep(0.5)
     wait_for_webapp_to_come_up()
 
@@ -92,6 +94,7 @@ class FakeOAuthProvider(OAuthProvider):
     """Фейковый сервис авторизации для тестирования
 
     Посылаем ему запросы, он должен что-нибудь ответить"""
+
     def __init__(
         self,
         code_url,
@@ -100,18 +103,18 @@ class FakeOAuthProvider(OAuthProvider):
         public_keys_url,
         client_id,
         client_secret,
-        access_token=''
+        access_token="",
     ) -> None:
         self.endpoint = None
         self.data = None
         super().__init__(
-            name='fake',
+            name="fake_provider",
             code_url=code_url,
             scopes=scopes,
             token_url=token_url,
             public_keys_url=public_keys_url,
             client_id=client_id,
-            client_secret=client_secret
+            client_secret=client_secret,
         )
 
     async def _post(self, url, data):
@@ -124,28 +127,25 @@ class FakeOAuthProvider(OAuthProvider):
             "refresh_token": "test_refresh_token",
             "scope": "test_scope",
             "token_type": "Bearer",
-            "id_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgdXNlciIsImlhdCI6MTUxNjIzOTAyMn0.cLFHUVEN9rjbcABNFWuUI77w9VNC8HL4NVCYhbSwELk'"
+            "id_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgdXNlciIsImlhdCI6MTUxNjIzOTAyMn0.cLFHUVEN9rjbcABNFWuUI77w9VNC8HL4NVCYhbSwELk'",
         }
-        self.response._content = json.dumps(json_content).encode('utf-8')
+        self.response._content = json.dumps(json_content).encode("utf-8")
         return self.response
 
     def _get_oauth_callback_URL(self):
-        return 'https://test-client/api/oauth/callback'
+        return "https://test-client/api/oauth/callback"
 
 
 @pytest.fixture
 def test_provider():
     return FakeOAuthProvider(
-            code_url='https://accounts.test.com/o/oauth2/v2/auth',
-            scopes=[
-                'https://www.testapis.com/auth/userinfo.email',
-                'openid'
-            ],
-            token_url='https://oauth2.testapis.com/token',
-            public_keys_url='https://www.testapis.com/oauth2/v3/certs',
-            client_id='test_client_id',
-            client_secret='test_client_secret'
-        )
+        code_url="https://accounts.test.com/o/oauth2/v2/auth",
+        scopes=["https://www.testapis.com/auth/userinfo.email", "openid"],
+        token_url="https://oauth2.testapis.com/token",
+        public_keys_url="https://www.testapis.com/oauth2/v3/certs",
+        client_id="test_client_id",
+        client_secret="test_client_secret",
+    )
 
 
 class FakeRepository(repository.AbstractRepository):
@@ -157,22 +157,28 @@ class FakeRepository(repository.AbstractRepository):
         self._authorizations.add(authorization)
 
     def _get_by_state(self, state):
-        return next(
-            (a for a in self._authorizations if state == a.state.state), None
-        )
+        return next((a for a in self._authorizations if state == a.state.state), None)
 
     def _get_by_grant(self, code):
         return next(
-            (a for a in self._authorizations
-                for grant in a.grants if code == grant.code),
-            None
+            (
+                a
+                for a in self._authorizations
+                for grant in a.grants
+                if code == grant.code
+            ),
+            None,
         )
 
     def _get_by_token(self, access_token):
         return next(
-            (a for a in self._authorizations
-                for token in a.tokens if access_token == token.access_token),
-            None
+            (
+                a
+                for a in self._authorizations
+                for token in a.tokens
+                if access_token == token.access_token
+            ),
+            None,
         )
 
 
@@ -195,7 +201,4 @@ def uow():
 
 @pytest.fixture(scope="module")
 def params():
-    return {
-        "state_code": "",
-        "grant_code": ""
-    }
+    return {"state_code": "", "grant_code": ""}

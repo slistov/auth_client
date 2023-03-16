@@ -11,7 +11,7 @@ from jose import utils
 
 class TestOAuthProvider:
     def test_creation(self, test_provider: OAuthProvider):
-        assert test_provider.name == "test_oauth_provider"
+        assert test_provider.name == "fake_provider"
         assert test_provider.code_url == "https://accounts.test.com/o/oauth2/v2/auth"
         assert test_provider.scopes == [
             "https://www.testapis.com/auth/userinfo.email",
