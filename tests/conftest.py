@@ -247,9 +247,9 @@ def grant_refresh() -> model.Grant:
 
 
 @pytest.fixture
-def token(grant_auth):
+def token(grant_authCode):
     return model.Token(
-        access_token=f"test_access_token_for_grant_{grant_auth.code}",
+        access_token=f"test_access_token_for_grant_{grant_authCode.code}",
         scope="test_scope",
         token_type="Bearer",
         id_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgdXNlciIsImlhdCI6MTUxNjIzOTAyMn0.cLFHUVEN9rjbcABNFWuUI77w9VNC8HL4NVCYhbSwELk'",
@@ -268,7 +268,9 @@ def auth_wStateGrant(state, grant_authCode):
 
 
 @pytest.fixture
-def auth_wStateGrantToken(state, grant_authCode, token):
+def auth_wStateGrantToken(state, grant_authCode, grant_refresh, token):
     state.deactivate()
     grant_authCode.deactivate()
-    return model.Authorization(state=state, grants=[grant_authCode], tokens=[token])
+    return model.Authorization(
+        state=state, grants=[grant_authCode, grant_refresh], tokens=[token]
+    )
