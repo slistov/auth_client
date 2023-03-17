@@ -194,7 +194,7 @@ class FakeUnitOfWork(unit_of_work.AbstractUnitOfWork):
         pass
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def uow():
     return FakeUnitOfWork()
 
