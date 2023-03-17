@@ -199,11 +199,6 @@ def uow():
     return FakeUnitOfWork()
 
 
-@pytest.fixture(scope="module")
-def params():
-    return {"state_code": "", "grant_code": ""}
-
-
 from fastapi.testclient import TestClient
 from oauth_client_lib import oauth_router
 from oauth_client_lib.entrypoints.fastapi_app import app
@@ -234,3 +229,46 @@ app.dependency_overrides[get_uow] = fake_uow
 @pytest.fixture(scope="function")
 def client():
     return TestClient(app)
+
+
+@pytest.fixture
+def state() -> model.State:
+    return model.State()
+
+
+@pytest.fixture
+def grant_authCode() -> model.Grant:
+    return model.Grant(code="auth_code", grant_type="authorization_code")
+
+
+@pytest.fixture
+def grant_refresh() -> model.Grant:
+    return model.Grant(code="refresh_code", grant_type="refresh_token")
+
+
+@pytest.fixture
+def token(grant_auth):
+    return model.Token(
+        access_token=f"test_access_token_for_grant_{grant_auth.code}",
+        scope="test_scope",
+        token_type="Bearer",
+        id_token="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgdXNlciIsImlhdCI6MTUxNjIzOTAyMn0.cLFHUVEN9rjbcABNFWuUI77w9VNC8HL4NVCYhbSwELk'",
+    )
+
+
+@pytest.fixture
+def auth_wState(state):
+    return model.Authorization(state=state)
+
+
+@pytest.fixture
+def auth_wStateGrant(state, grant_authCode):
+    state.deactivate()
+    return model.Authorization(state=state, grants=[grant_authCode])
+
+
+@pytest.fixture
+def auth_wStateGrantToken(state, grant_authCode, token):
+    state.deactivate()
+    grant_authCode.deactivate()
+    return model.Authorization(state=state, grants=[grant_authCode], tokens=[token])
