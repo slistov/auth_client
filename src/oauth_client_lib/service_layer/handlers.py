@@ -37,6 +37,8 @@ async def auth_code_recieved(
     """
     with uow:
         auth = uow.authorizations.get(state_code=evt.state_code)
+        if not auth:
+            raise exceptions.InvalidState("State is invalid")
         state = auth.state
 
         # Exception: are we under attack?
