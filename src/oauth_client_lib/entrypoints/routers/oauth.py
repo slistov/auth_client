@@ -33,8 +33,7 @@ async def api_get_oauth_redirect_uri(
 
 
 @oauth_router.get("/callback")
-async def api_oauth_callback(state, code):
-    uow = unit_of_work.SqlAlchemyUnitOfWork()
+async def api_oauth_callback(state, code, uow=Depends(get_uow)):
     evt = events.AuthCodeRecieved(
         state_code=state,
         grant_code=code,
