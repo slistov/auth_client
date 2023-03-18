@@ -12,7 +12,7 @@ from sqlalchemy.orm import sessionmaker, clear_mappers
 
 from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
 from src.oauth_client_lib.adapters.orm import mapper_registry, start_mappers
-from oauth_client_lib.entrypoints.config import config
+from oauth_client_lib.entrypoints import config
 from src.oauth_client_lib.adapters import repository
 from src.oauth_client_lib.service_layer import unit_of_work
 from src.oauth_client_lib.domain import model
@@ -52,7 +52,7 @@ def wait_for_postgres_to_come_up(engine):
 
 def wait_for_webapp_to_come_up():
     deadline = time.time() + 10
-    url = config.get_api_url()
+    url = config.get_api_host()
     while time.time() < deadline:
         try:
             return requests.get(url)
@@ -222,13 +222,16 @@ def fake_uow():
     return FakeUnitOfWork()
 
 
-app.dependency_overrides[get_provider] = fake_provider
-app.dependency_overrides[get_uow] = fake_uow
+@pytest.fixture
+def test_app(uow):
+    app.dependency_overrides[get_provider] = fake_provider
+    app.dependency_overrides[get_uow] = lambda: uow
+    return app
 
 
 @pytest.fixture(scope="function")
-def client():
-    return TestClient(app)
+def client(test_app):
+    return TestClient(test_app)
 
 
 @pytest.fixture
