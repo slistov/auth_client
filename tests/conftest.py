@@ -20,6 +20,12 @@ from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 
 from src.oauth_client_lib.domain import model
 
+from fastapi.testclient import TestClient
+from oauth_client_lib import oauth_router
+from oauth_client_lib.entrypoints.fastapi_app import app
+from oauth_client_lib.entrypoints.routers.oauth import get_provider, get_uow
+
+
 metadata = mapper_registry.metadata
 
 
@@ -199,32 +205,12 @@ def uow():
     return FakeUnitOfWork()
 
 
-from fastapi.testclient import TestClient
-from oauth_client_lib import oauth_router
-from oauth_client_lib.entrypoints.fastapi_app import app
-from oauth_client_lib.entrypoints.routers.oauth import get_provider, get_uow
-
 app.include_router(oauth_router)
 
 
-def fake_provider():
-    return FakeOAuthProvider(
-        code_url="https://accounts.test.com/o/oauth2/v2/auth",
-        scopes=["https://www.testapis.com/auth/userinfo.email", "openid"],
-        token_url="https://oauth2.testapis.com/token",
-        public_keys_url="https://www.testapis.com/oauth2/v3/certs",
-        client_id="test_client_id",
-        client_secret="test_client_secret",
-    )
-
-
-def fake_uow():
-    return FakeUnitOfWork()
-
-
 @pytest.fixture
-def test_app(uow):
-    app.dependency_overrides[get_provider] = fake_provider
+def test_app(uow, test_provider):
+    app.dependency_overrides[get_provider] = lambda: test_provider
     app.dependency_overrides[get_uow] = lambda: uow
     return app
 
