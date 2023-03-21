@@ -24,10 +24,10 @@ class Authorization:
         tokens: List[Token] = None,
         is_active: bool = True,
         created=None,
-        provider: str = "Own",
+        provider_name: str = "Own",
     ):
         self.state = state
-        self.provider = provider
+        self.provider = provider_name
         self.grants = grants if grants else []
         self.tokens = tokens if tokens else []
         self.is_active = is_active
