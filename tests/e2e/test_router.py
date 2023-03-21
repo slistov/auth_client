@@ -36,7 +36,7 @@ async def test_oauth_callback_happy(
 ):
     """Callback endpoint
     - accepts auth code
-    - requests ouathprovider for token
+    - requests ouath provider for token
     - returns token recieved"""
     uow.authorizations.add(auth_wState)
     r = client.get(
