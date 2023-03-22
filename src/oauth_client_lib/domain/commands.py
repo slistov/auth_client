@@ -20,7 +20,7 @@ class Command:
 
 
 @dataclass
-class GetAuthorizeURL(Command):
+class CreateAuthorization(Command):
     source_url: str
     provider: Any
 

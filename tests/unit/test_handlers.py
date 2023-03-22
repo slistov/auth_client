@@ -11,12 +11,10 @@ from src.oauth_client_lib.service_layer.unit_of_work import AbstractUnitOfWork
 class TestHappyPaths:
     @pytest.mark.asyncio
     async def test_create_authorization_returns_state_code(
-        self, uow: AbstractUnitOfWork
+        self, uow: AbstractUnitOfWork, test_provider
     ):
         """Handler create_authorization being tested"""
-        cmd = commands.CreateAuthorization(
-            source_url="origin", provider="test_provider"
-        )
+        cmd = commands.CreateAuthorization(source_url="origin", provider=test_provider)
         state = await handlers.create_authorization(cmd=cmd, uow=uow)
 
         auth = uow.authorizations.get(state_code=state)
@@ -24,12 +22,14 @@ class TestHappyPaths:
 
     @pytest.mark.asyncio
     async def test_auth_code_recieved_returns_auth_code(
-        self, uow: AbstractUnitOfWork, state, grant_authCode, auth_wState
+        self, uow: AbstractUnitOfWork, state, grant_authCode, auth_wState, test_provider
     ):
         """Handler auth_code_recieved being tested"""
         uow.authorizations.add(auth_wState)
         evt = events.AuthCodeRecieved(
-            state_code=state.state, grant_code=grant_authCode.code
+            state_code=state.state,
+            grant_code=grant_authCode.code,
+            provider=test_provider,
         )
         code = await handlers.auth_code_recieved(evt=evt, uow=uow)
 
@@ -52,7 +52,9 @@ class TestHappyPaths:
         """Handler request_token being tested"""
         assert grant_authCode.is_active
         uow.authorizations.add(auth_wStateGrant)
-        cmd = commands.RequestToken(grant_code=grant_authCode.code, oauth=test_provider)
+        cmd = commands.RequestToken(
+            grant_code=grant_authCode.code, provider=test_provider
+        )
         access_token = await handlers.request_token(cmd=cmd, uow=uow)
         assert access_token == auth_wStateGrant.get_active_token().access_token
         assert not grant_authCode.is_active
@@ -122,7 +124,8 @@ class TestBusinessRestrictions:
         assert old_grant.is_active
         assert old_token.is_active
         access_token = await handlers.request_token(
-            commands.RequestToken(grant_code=old_grant.code, oauth=test_provider), uow
+            commands.RequestToken(grant_code=old_grant.code, provider=test_provider),
+            uow,
         )
         assert not old_grant.is_active
         assert not old_token.is_active

@@ -15,7 +15,7 @@ async def create_authorization(
 ) -> str:
     with uow:
         state = model.State()
-        auth = model.Authorization(state=state, provider=cmd.provider)
+        auth = model.Authorization(state=state, provider_name=cmd.provider.name)
         uow.authorizations.add(auth)
         uow.commit()
         return state.state
@@ -55,7 +55,7 @@ async def auth_code_recieved(
         uow.commit()
         # Now, authorization must get access token using the auth code
         auth.events.append(
-            commands.RequestToken(grant_code=grant.code),
+            commands.RequestToken(provider=evt.provider, grant_code=grant.code),
         )
         return grant.code
 
@@ -79,17 +79,8 @@ async def request_token(
             old_token.deactivate()
 
         # We could pass custom oauth for test purposes
-        oauth = cmd.oauth
-        if not oauth:
-            scopes, urls = config.get_oauth_params(auth.provider)
-            oauth = oauth_provider.OAuthProvider(
-                name=auth.provider,
-                scopes=scopes,
-                code_url=urls["code"],
-                token_url=urls["token"],
-                public_keys_url=urls["public_keys"],
-            )
-        response = await oauth.request_token(grant=old_grant)
+        p = cmd.provider
+        response = await p.request_token(grant=old_grant)
         if not response.ok:
             raise exceptions.OAuthError("Couldn't request token")
 

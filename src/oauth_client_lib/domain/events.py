@@ -3,7 +3,7 @@
 
 # pylint: disable=too-few-public-methods
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Any
 
 
 class Event:
@@ -30,6 +30,7 @@ class GrantRecieved(Event):
 
     # grant_type: Union[Literal["authorization_code"], Literal["refresh_token"]]
     grant_code: str
+    provider: Any
 
 
 @dataclass

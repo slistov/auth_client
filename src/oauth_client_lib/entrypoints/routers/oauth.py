@@ -26,19 +26,22 @@ async def get_uow():
 async def api_get_oauth_redirect_uri(
     provider, p=Depends(get_provider), uow=Depends(get_uow)
 ):
-    cmd = commands.CreateAuthorization("origin", provider=provider)
+    cmd = commands.CreateAuthorization("origin", provider=p)
     [state_code] = await messagebus.handle(cmd, uow)
     url = await p.get_authorize_uri(state_code)
     return RedirectResponse(url=url)
 
 
 @oauth_router.get("/callback")
-async def api_oauth_callback(state, code, uow=Depends(get_uow)):
+async def api_oauth_callback(
+    state, code, p=Depends(get_provider), uow=Depends(get_uow)
+):
     evt = events.AuthCodeRecieved(
+        provider=p,
         state_code=state,
         grant_code=code,
     )
     results = await messagebus.handle(evt, uow)
     assert results, "You should request new authorization code!"
-    access_token = results[-1]
+    [access_token] = results
     return {"access_token": access_token}

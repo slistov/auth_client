@@ -43,17 +43,5 @@ async def test_oauth_callback_happy(
         f"http://testserver/oauth/callback?state={state.state}&code={grant_authCode.code}"
     )
 
-    url_query = urlsplit(r.url).query
-    query = parse_qsl(url_query)
-
-    assert (
-        dict(query).items()
-        >= {
-            "response_type": "code",
-            "client_id": "test_client_id",
-            "redirect_uri": "https://test-client/api/oauth/callback",
-            "scope": "https://www.testapis.com/auth/userinfo.email openid",
-        }.items()
-    )
-    assert "state" in dict(query)
-    assert dict(query)["state"]
+    assert r.ok
+    assert r.json() == {"access_token": "test_access_token_for_grant_auth_code"}
