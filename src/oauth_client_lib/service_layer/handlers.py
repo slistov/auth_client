@@ -4,10 +4,12 @@
 """
 from urllib.parse import urlencode
 
+from .oauth import provider
+
 from ..entrypoints import config
 
 from ..domain import commands, events, model
-from . import exceptions, oauth_provider, unit_of_work
+from . import exceptions, unit_of_work
 
 
 async def create_authorization(

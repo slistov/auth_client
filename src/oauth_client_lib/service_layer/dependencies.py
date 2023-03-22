@@ -1,4 +1,4 @@
-from .oauth_provider import OAuthProvider
+from .oauth.provider import OAuthProvider
 from .unit_of_work import AbstractUnitOfWork, SqlAlchemyUnitOfWork
 from .exceptions import OAuthError
 

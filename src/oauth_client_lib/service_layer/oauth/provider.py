@@ -4,15 +4,12 @@ import aiohttp
 import json
 import requests
 
-from ..entrypoints.config import get_oauth_callback_URL
-from ..domain import commands, model
+from ...entrypoints.config import get_oauth_callback_URL
+from ...domain import commands, model
 from fastapi.responses import JSONResponse
-from ..service_layer import messagebus, unit_of_work
-from . import exceptions
-from ..entrypoints import config
-from ..adapters import orm
-
-orm.start_mappers()
+from .. import messagebus, unit_of_work
+from .. import exceptions
+from ...entrypoints import config
 
 
 class OAuthProvider:
@@ -23,14 +20,16 @@ class OAuthProvider:
         client_secret="",
         code_url=None,
         token_url=None,
+        userinfo_url=None,
         scopes=[],
         public_keys_url="",
     ):
-        if not (scopes and code_url and token_url and public_keys_url):
+        if not (scopes and code_url and token_url and userinfo_url and public_keys_url):
             (
                 _scopes,
                 _code_url,
                 _token_url,
+                _userinfo_url,
                 _public_keys_url,
             ) = self.__class__._get_provider_params(name=name)
 
@@ -101,31 +100,27 @@ class OAuthProvider:
         return uri
 
     async def _post(self, url, data) -> requests.Response:
-        return await post_async(url=url, data=data)
+        return await async_post(url=url, data=data)
 
     async def get_email(self):
-        return self.auth
+        return self._get_email()
 
-    # async def get_token(self) -> model.Token:
-    #     return model.Token(await self._get_token_str())
+    async def _get_email(self):
+        return self._get_user_info()["email"]
 
-    # async def get_grant(self) -> model.Grant:
-    #     code = await self._get_grant_code()
-    #     if code:
-    #         return model.Grant("refresh_token", code)
-
-    # async def _get_token_str(self):
-    #     if self.response.ok:
-    #         resp_json = await self.response.json()
-    #         return resp_json.get("access_token", None)
-
-    # async def _get_grant_code(self):
-    #     if self.response.ok:
-    #         resp_json = await self.response.json()
-    #         return resp_json.get("refresh_token", None)
+    async def _get_user_info(self):
+        return async_get(url=self.userinfo_url)
 
 
-async def post_async(url, data) -> requests.Response:
+async def async_get(url, header, params=None) -> requests.Response:
+    async with aiohttp.ClientSession() as session:
+        if params:
+            url = f"{url}?{urlencode(params)}"
+        response = await session.get(url=url, header=header)
+        return response
+
+
+async def async_post(url, data) -> requests.Response:
     async with aiohttp.ClientSession() as session:
         response = await session.post(url=url, data=data)
         return response

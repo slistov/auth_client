@@ -5,7 +5,12 @@ from fastapi.routing import APIRouter
 from ...service_layer import unit_of_work
 from ...service_layer import messagebus
 from ...service_layer.messagebus import commands, events
-from ...service_layer.oauth_provider import OAuthProvider
+from ...service_layer.oauth.provider import OAuthProvider
+from ...adapters import orm
+
+
+orm.start_mappers()
+
 
 oauth_router = APIRouter(
     prefix="/oauth",

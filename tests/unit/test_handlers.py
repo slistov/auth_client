@@ -69,6 +69,7 @@ class TestBusinessRestrictions:
         grant_authCode: model.Grant,
         token: model.Token,
         auth_wStateGrantToken: model.Authorization,
+        test_provider,
     ):
         """State could be used only once
         If inactive (already used) state provided,
@@ -80,7 +81,7 @@ class TestBusinessRestrictions:
 
         uow.authorizations.add(auth_wStateGrantToken)
         evt = events.AuthCodeRecieved(
-            grant_code="fakefake_code", state_code=state.state
+            grant_code="fakefake_code", state_code=state.state, provider=test_provider
         )
         with pytest.raises(exceptions.InactiveState, match="State is inactive"):
             code = await handlers.auth_code_recieved(evt=evt, uow=uow)
@@ -94,11 +95,13 @@ class TestBusinessRestrictions:
 
     @pytest.mark.asyncio
     async def test_wrong_stateCode_raises_InvalidState_exception(
-        self, uow: AbstractUnitOfWork, state, auth_wState
+        self, uow: AbstractUnitOfWork, state, auth_wState, test_provider
     ):
         uow.authorizations.add(auth_wState)
         evt = events.AuthCodeRecieved(
-            grant_code="possibly_fake_code", state_code="wrong_state"
+            grant_code="possibly_fake_code",
+            state_code="wrong_state",
+            provider=test_provider,
         )
 
         with pytest.raises(exceptions.InvalidState, match="State is invalid"):

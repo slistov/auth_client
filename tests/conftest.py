@@ -10,7 +10,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, clear_mappers
 
-from src.oauth_client_lib.service_layer.oauth_provider import OAuthProvider
+from oauth_client_lib.service_layer.oauth.provider import OAuthProvider
 from src.oauth_client_lib.adapters.orm import mapper_registry, start_mappers
 from oauth_client_lib.entrypoints import config
 from src.oauth_client_lib.adapters import repository
@@ -106,6 +106,7 @@ class FakeOAuthProvider(OAuthProvider):
         code_url,
         scopes,
         token_url,
+        userinfo_url,
         public_keys_url,
         client_id,
         client_secret,
@@ -118,6 +119,7 @@ class FakeOAuthProvider(OAuthProvider):
             code_url=code_url,
             scopes=scopes,
             token_url=token_url,
+            userinfo_url=userinfo_url,
             public_keys_url=public_keys_url,
             client_id=client_id,
             client_secret=client_secret,
@@ -148,6 +150,7 @@ def test_provider():
         code_url="https://accounts.test.com/o/oauth2/v2/auth",
         scopes=["https://www.testapis.com/auth/userinfo.email", "openid"],
         token_url="https://oauth2.testapis.com/token",
+        userinfo_url="https://oauth2.testapis.com/userinfo",
         public_keys_url="https://www.testapis.com/oauth2/v3/certs",
         client_id="test_client_id",
         client_secret="test_client_secret",
