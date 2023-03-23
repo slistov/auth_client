@@ -3,6 +3,7 @@
 
 from dataclasses import dataclass
 from typing import Any
+from ..domain import model
 
 
 class Command:
@@ -29,6 +30,5 @@ class CreateAuthorization(Command):
 class RequestToken(Command):
     """Запросить токен по гранту"""
 
-    provider: Any
     grant_code: str = None
     token: str = None

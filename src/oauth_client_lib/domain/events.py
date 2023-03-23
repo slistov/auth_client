@@ -30,7 +30,6 @@ class GrantRecieved(Event):
 
     # grant_type: Union[Literal["authorization_code"], Literal["refresh_token"]]
     grant_code: str
-    provider: Any
 
 
 @dataclass

@@ -2,7 +2,7 @@
 #    External OAuth services parameters   #
 ###########################################
 oauth:
-  callback: /oauth/callback
+  callback: /api/oauth/callback
   providers:
     google:
       scopes: 
@@ -11,6 +11,7 @@ oauth:
       urls:
         code: https://accounts.google.com/o/oauth2/v2/auth
         token: https://oauth2.googleapis.com/token
+        userinfo: https://oauth2.googleapis.com/userinfo
         public_keys: https://www.googleapis.com/oauth2/v3/certs
 
 

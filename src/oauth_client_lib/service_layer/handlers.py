@@ -57,7 +57,7 @@ async def auth_code_recieved(
         uow.commit()
         # Now, authorization must get access token using the auth code
         auth.events.append(
-            commands.RequestToken(provider=evt.provider, grant_code=grant.code),
+            commands.RequestToken(grant_code=grant.code),
         )
         return grant.code
 
@@ -81,17 +81,18 @@ async def request_token(
             old_token.deactivate()
 
         # We could pass custom oauth for test purposes
-        p = cmd.provider
-        response = await p.request_token(grant=old_grant)
-        if not response.ok:
+        p = provider.OAuthProvider(auth.provider)
+        result = await p.request_token(grant=old_grant)
+        if not result:
             raise exceptions.OAuthError("Couldn't request token")
 
-        r = response.json()
-        new_token = model.Token(**r)
+        new_token = model.Token(**result)
         auth.tokens.append(new_token)
 
-        if "refresh_token" in r:
-            new_grant = model.Grant(grant_type="refresh_token", code=r["refresh_token"])
+        if "refresh_token" in result:
+            new_grant = model.Grant(
+                grant_type="refresh_token", code=result["refresh_token"]
+            )
             auth.grants.append(new_grant)
 
         uow.commit()

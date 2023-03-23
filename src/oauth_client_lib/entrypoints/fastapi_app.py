@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-
-from ..adapters import orm
+from .routers.oauth import oauth_router
 
 
 app = FastAPI()
-# Worm.start_mappers()
+
+app.include_router(prefix="/api", router=oauth_router)
