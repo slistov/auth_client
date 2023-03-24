@@ -22,7 +22,7 @@ oauth_router = APIRouter(
 async def api_get_oauth_redirect_uri(
     provider, p=Depends(get_provider), uow=Depends(get_uow)
 ):
-    cmd = commands.CreateAuthorization("origin", provider=p)
+    cmd = commands.CreateAuthorization(source_url="origin", provider=p)
     [state_code] = await messagebus.handle(cmd, uow)
     url = await p.get_authorization_url(state_code)
     return RedirectResponse(url=url)

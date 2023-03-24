@@ -138,7 +138,7 @@ class FakeOAuthProvider(OAuthProvider):
             "id_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlRlc3QgdXNlciIsImlhdCI6MTUxNjIzOTAyMn0.cLFHUVEN9rjbcABNFWuUI77w9VNC8HL4NVCYhbSwELk'",
         }
         self.response._content = json.dumps(json_content).encode("utf-8")
-        return self.response
+        return self.response.json()
 
     def _get_oauth_callback_URL(self):
         return "https://test-client/api/oauth/callback"

@@ -6,7 +6,9 @@ from typing import Any
 from ..domain import model
 
 
+@dataclass
 class Command:
+    provider: Any = None
     pass
 
 
@@ -22,8 +24,7 @@ class Command:
 
 @dataclass
 class CreateAuthorization(Command):
-    source_url: str
-    provider: Any
+    source_url: str = None
 
 
 @dataclass

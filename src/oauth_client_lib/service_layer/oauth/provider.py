@@ -47,7 +47,13 @@ class OAuthProvider:
     @staticmethod
     def _get_provider_params(name):
         scopes, urls = config.get_oauth_params(name)
-        return scopes, urls["code"], urls["token"], urls["public_keys"]
+        return (
+            scopes,
+            urls["code"],
+            urls["token"],
+            urls["userinfo"],
+            urls["public_keys"],
+        )
 
     @staticmethod
     def _get_oauth_secrets(provider):
@@ -55,14 +61,12 @@ class OAuthProvider:
             secrets = json.load(f)["web"]
             return secrets["client_id"], secrets["client_secret"]
 
-    async def get_authorize_uri(self, state_code):
-        return self._get_oauth_uri(state_code)
+    async def get_authorization_url(self, state_code):
+        return self._get_authorization_url(state_code)
 
-    async def request_token(self, grant) -> requests.Response:
+    async def request_token(self, grant) -> aiohttp.ClientResponse.json:
         data = self._get_data_for_token_request(grant=grant)
-        response = await self._post(url=self.token_url, data=data)
-        if response.ok:
-            return response
+        return await self._post(url=self.token_url, data=data)
 
     def _get_data_for_token_request(self, grant):
         if grant.grant_type == "authorization_code":
@@ -88,7 +92,7 @@ class OAuthProvider:
     def _get_oauth_callback_URL(self):
         return get_oauth_callback_URL()
 
-    def _get_oauth_uri(self, state_code):
+    def _get_authorization_url(self, state_code):
         params = {
             "response_type": "code",
             "client_id": self.client_id,
@@ -99,7 +103,7 @@ class OAuthProvider:
         uri = f"{self.code_url}?{urlencode(params,)}"
         return uri
 
-    async def _post(self, url, data) -> requests.Response:
+    async def _post(self, url, data) -> aiohttp.ClientResponse.json:
         return await async_post(url=url, data=data)
 
     async def get_email(self):
@@ -112,7 +116,7 @@ class OAuthProvider:
         return async_get(url=self.userinfo_url)
 
 
-async def async_get(url, header, params=None) -> requests.Response:
+async def async_get(url, header, params=None) -> aiohttp.ClientResponse:
     async with aiohttp.ClientSession() as session:
         if params:
             url = f"{url}?{urlencode(params)}"
@@ -120,7 +124,7 @@ async def async_get(url, header, params=None) -> requests.Response:
         return response
 
 
-async def async_post(url, data) -> requests.Response:
+async def async_post(url, data) -> aiohttp.ClientResponse.json:
     async with aiohttp.ClientSession() as session:
-        response = await session.post(url=url, data=data)
-        return response
+        async with session.post(url=url, data=data) as resp:
+            return await resp.json()
