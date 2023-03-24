@@ -81,7 +81,10 @@ async def request_token(
             old_token.deactivate()
 
         # We could pass custom oauth for test purposes
-        p = provider.OAuthProvider(auth.provider)
+        if cmd.provider:
+            p = cmd.provider
+        else:
+            p = provider.OAuthProvider(auth.provider)
         result = await p.request_token(grant=old_grant)
         if not result:
             raise exceptions.OAuthError("Couldn't request token")
