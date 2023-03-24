@@ -25,7 +25,7 @@ class TestOAuthProvider:
     @pytest.mark.asyncio
     async def test_returns_authorize_uri(self, test_provider: OAuthProvider):
         assert (
-            await test_provider.get_authorize_uri(state_code="some_state_code")
+            await test_provider.get_authorization_url(state_code="some_state_code")
             == "https://accounts.test.com/o/oauth2/v2/auth?response_type=code&client_id=test_client_id&redirect_uri=https%3A%2F%2Ftest-client%2Fapi%2Foauth%2Fcallback&scope=https%3A%2F%2Fwww.testapis.com%2Fauth%2Fuserinfo.email+openid&state=some_state_code"
         )
 

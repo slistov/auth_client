@@ -29,7 +29,6 @@ class TestHappyPaths:
         evt = events.AuthCodeRecieved(
             state_code=state.state,
             grant_code=grant_authCode.code,
-            provider=test_provider,
         )
         code = await handlers.auth_code_recieved(evt=evt, uow=uow)
 
@@ -81,7 +80,7 @@ class TestBusinessRestrictions:
 
         uow.authorizations.add(auth_wStateGrantToken)
         evt = events.AuthCodeRecieved(
-            grant_code="fakefake_code", state_code=state.state, provider=test_provider
+            grant_code="fakefake_code", state_code=state.state
         )
         with pytest.raises(exceptions.InactiveState, match="State is inactive"):
             code = await handlers.auth_code_recieved(evt=evt, uow=uow)
@@ -101,7 +100,6 @@ class TestBusinessRestrictions:
         evt = events.AuthCodeRecieved(
             grant_code="possibly_fake_code",
             state_code="wrong_state",
-            provider=test_provider,
         )
 
         with pytest.raises(exceptions.InvalidState, match="State is invalid"):
