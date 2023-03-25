@@ -1,18 +1,13 @@
-from .oauth.provider import OAuthProvider
+from .oauth import OAuthProvider, OAuthProviders
 from .unit_of_work import AbstractUnitOfWork, SqlAlchemyUnitOfWork
 from .exceptions import OAuthError
 
 
-async def get_provider(provider) -> OAuthProvider:
-    if not provider in providers:
+def get_provider(provider) -> OAuthProvider:
+    if not provider in OAuthProviders:
         raise OAuthError("Unknown provider name")
-    return OAuthProvider(provider)
+    return OAuthProviders[provider]()
 
 
-async def get_uow() -> AbstractUnitOfWork:
+def get_uow() -> AbstractUnitOfWork:
     return SqlAlchemyUnitOfWork()
-
-
-providers = [
-    "google",
-]

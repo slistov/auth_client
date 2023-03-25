@@ -5,6 +5,13 @@ from ...entrypoints import config
 
 
 class OAuthGoogleProvider(OAuthProvider):
+    async def __init__(
+        self,
+    ):
+        super().__init__(
+            "google",
+        )
+
     async def _get_authorization_url(self, state_code):
         # Use the client_secret.json file to identify the application requesting
         # authorization. The client ID (from that file) and access scopes are required.

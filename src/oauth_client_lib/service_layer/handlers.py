@@ -4,7 +4,7 @@
 """
 from urllib.parse import urlencode
 
-from .oauth import provider
+from .oauth import OAuthProviders
 
 from ..entrypoints import config
 
@@ -84,7 +84,7 @@ async def request_token(
         if cmd.provider:
             p = cmd.provider
         else:
-            p = provider.OAuthProvider(auth.provider)
+            p = OAuthProviders[auth.provider]()
         result = await p.request_token(grant=old_grant)
         if not result:
             raise exceptions.OAuthError("Couldn't request token")

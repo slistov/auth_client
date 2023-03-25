@@ -2,13 +2,9 @@ from urllib.parse import urlencode
 
 import aiohttp
 import json
-import requests
 
 from ...entrypoints.config import get_oauth_callback_URL
-from ...domain import commands, model
-from fastapi.responses import JSONResponse
-from .. import messagebus, unit_of_work
-from .. import exceptions
+from ...service_layer import exceptions
 from ...entrypoints import config
 
 
@@ -24,6 +20,7 @@ class OAuthProvider:
         scopes=[],
         public_keys_url="",
     ):
+        self.name = name
         if not (scopes and code_url and token_url and userinfo_url and public_keys_url):
             (
                 _scopes,
@@ -31,9 +28,8 @@ class OAuthProvider:
                 _token_url,
                 _userinfo_url,
                 _public_keys_url,
-            ) = self.__class__._get_provider_params(name=name)
+            ) = self.__class__._get_provider_params(name=self.name)
 
-        self.name = name
         self.code_url = code_url if code_url else _code_url
         self.token_url = token_url if token_url else _token_url
         self.scopes = scopes if scopes else _scopes
@@ -120,8 +116,8 @@ async def async_get(url, header, params=None) -> aiohttp.ClientResponse:
     async with aiohttp.ClientSession() as session:
         if params:
             url = f"{url}?{urlencode(params)}"
-        response = await session.get(url=url, header=header)
-        return response
+        async with session.get(url=url, header=header) as resp:
+            return await resp.json()
 
 
 async def async_post(url, data) -> aiohttp.ClientResponse.json:
