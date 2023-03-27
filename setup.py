@@ -30,6 +30,7 @@ setup(
         "psycopg2==2.9.3",
         "python-dotenv==0.21.0",
         "aiohttp==3.8.3",
+        "aiofiles==21.1.0",
         "sqlalchemy_json",
         "python-jose",
     ],

@@ -20,7 +20,7 @@ oauth:
         code: https://oauth.yandex.ru/authorize
         token: https://oauth.yandex.ru/token
         userinfo: https://login.yandex.ru/info
-        public_keys: https://oauth.yandex.ru/certs
+
 
 #############################################
 #                LOGGING                    #
