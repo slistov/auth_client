@@ -44,11 +44,9 @@ class TestOAuthProvider:
         uow.authorizations.add(auth=auth)
 
         response = await test_provider.request_token(grant=grant)
-        assert response.status_code == 200
-        assert (
-            response.json()["access_token"] == "test_access_token_for_grant_test_code"
-        )
-        assert response.json()["refresh_token"] == "test_refresh_token"
+        assert response
+        assert response["access_token"] == "test_access_token_for_grant_test_code"
+        assert response["refresh_token"] == "test_refresh_token"
 
     def test_return_email_using_token(
         self,
