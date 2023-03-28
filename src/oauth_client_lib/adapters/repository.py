@@ -9,8 +9,8 @@ from ..service_layer import exceptions
 
 
 class AbstractRepository(abc.ABC):
-    """Абстрактный репозиторий
-    """
+    """Абстрактный репозиторий"""
+
     def __init__(self):
         self.seen = set()
 
@@ -18,12 +18,7 @@ class AbstractRepository(abc.ABC):
         self._add(auth)
         self.seen.add(auth)
 
-    def get(
-            self,
-            token=None,
-            grant_code=None,
-            state_code=None
-    ) -> model.Authorization:
+    def get(self, token=None, grant_code=None, state_code=None) -> model.Authorization:
         """Get validated authorization
 
         Just validate auth
@@ -35,10 +30,7 @@ class AbstractRepository(abc.ABC):
             return auth
 
     def _get_not_validated(
-            self,
-            token=None,
-            grant_code=None,
-            state_code=None
+        self, token=None, grant_code=None, state_code=None
     ) -> model.Authorization:
         """Get non-validated authorization
 
@@ -96,12 +88,9 @@ class SQLAlchemyRepository(AbstractRepository):
         return (
             self.session.query(model.Authorization)
             .join(model.Token)
-            .filter(orm.tokens.c.token == token)
+            .filter(orm.tokens.c.access_token == token)
             .first()
         )
 
     def cancel_authorization(self):
-        return (
-            self.session.query(model.Authorization).
-            join(model.State)
-        )
+        return self.session.query(model.Authorization).join(model.State)
