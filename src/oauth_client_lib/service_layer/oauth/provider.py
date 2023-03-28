@@ -10,11 +10,9 @@ from ...entrypoints import config
 
 
 class OAuthProvider:
-    def __init__(
-        self,
-        name,
-    ):
+    def __init__(self, name, access_token=None):
         self.name = name
+        self.access_token = access_token
 
     def _get_provider_params(self):
         scopes, urls = config.get_oauth_params(self.name)
@@ -92,18 +90,28 @@ class OAuthProvider:
     async def get_email(self):
         return self._get_email()
 
-    async def _get_email(self):
-        return self._get_user_info()["email"]
+    async def get_user_info(self):
+        return await self._get_user_info()
+
+    async def _get_email(self, token):
+        return await self._get_user_info()["email"]
 
     async def _get_user_info(self):
-        return async_get(url=self.userinfo_url)
+        return await async_get(
+            url=self._get_userinfo_url(),
+            headers={"Authorization": f"Bearer {self.access_token}"},
+        )
+
+    def _get_userinfo_url(self):
+        _, urls = self._get_provider_params()
+        return urls["userinfo"]
 
 
-async def async_get(url, header, params=None) -> aiohttp.ClientResponse:
+async def async_get(url, headers={}, params={}) -> aiohttp.ClientResponse:
     async with aiohttp.ClientSession() as session:
         if params:
             url = f"{url}?{urlencode(params)}"
-        async with session.get(url=url, header=header) as resp:
+        async with session.get(url=url, headers=headers) as resp:
             return await resp.json()
 
 
