@@ -5,8 +5,9 @@ from fastapi.routing import APIRouter
 from ...service_layer import messagebus
 from ...service_layer.messagebus import commands, events
 from ...adapters import orm
-from ...service_layer.dependencies import get_uow, get_provider
-
+from ...service_layer.dependencies import get_uow, get_provider, get_user_info
+from .. import schemas
+from typing import Annotated
 
 orm.start_mappers()
 
@@ -38,3 +39,8 @@ async def api_oauth_callback(state, code, uow=Depends(get_uow)):
     assert results, "You should request new authorization code!"
     [access_token] = results
     return {"access_token": access_token}
+
+
+@oauth_router.get("/userinfo")
+async def api_get_user_info(userinfo: str = Depends(get_user_info)):
+    return userinfo
