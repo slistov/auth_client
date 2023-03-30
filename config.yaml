@@ -1,0 +1,29 @@
+###########################################
+#    External OAuth services parameters   #
+###########################################
+oauth:
+  callback: /api/oauth/callback
+  providers:
+    google-api:
+      scopes: 
+      - https://www.googleapis.com/auth/userinfo.email
+      - openid
+      urls:
+        code: https://accounts.google.com/o/oauth2/v2/auth
+        token: https://oauth2.googleapis.com/token
+        userinfo: https://oauth2.googleapis.com/userinfo
+        public_keys: https://www.googleapis.com/oauth2/v3/certs
+    yandex:
+      scopes:
+      - login:email
+      urls:
+        code: https://oauth.yandex.ru/authorize
+        token: https://oauth.yandex.ru/token
+        userinfo: https://login.yandex.ru/info
+
+
+#############################################
+#                LOGGING                    #
+#############################################
+ERROR_LOG_FILENAME: "oauth_client_lib.log"
+

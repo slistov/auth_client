@@ -1,9 +1,16 @@
+from fastapi import Depends
 from fastapi.responses import RedirectResponse
 from fastapi.routing import APIRouter
 
-from ...service_layer import unit_of_work
 from ...service_layer import messagebus
 from ...service_layer.messagebus import commands, events
+from ...adapters import orm
+from ...service_layer.dependencies import get_uow, get_provider, get_user_info
+from ...service_layer.oauth import schemas
+from typing import Annotated
+
+orm.start_mappers()
+
 
 oauth_router = APIRouter(
     prefix="/oauth",
@@ -13,23 +20,27 @@ oauth_router = APIRouter(
 
 
 @oauth_router.get("/redirect")
-async def api_get_oauth_redirect_uri(provider):
-    uow = unit_of_work.SqlAlchemyUnitOfWork()
-    cmd = commands.CreateAuthorization("origin", provider=provider)
+async def api_get_oauth_redirect_uri(
+    provider, p=Depends(get_provider), uow=Depends(get_uow)
+):
+    cmd = commands.CreateAuthorization(source_url="origin", provider=p)
     [state_code] = await messagebus.handle(cmd, uow)
-    url = await messagebus.get_oauth_uri(state_code)
-    # return url
+    url = await p.get_authorization_url(state_code)
     return RedirectResponse(url=url)
 
 
 @oauth_router.get("/callback")
-async def api_oauth_callback(state, code):
-    uow = unit_of_work.SqlAlchemyUnitOfWork()
+async def api_oauth_callback(state, code, uow=Depends(get_uow)):
     evt = events.AuthCodeRecieved(
-            state_code=state,
-            grant_code=code,
-        )
+        state_code=state,
+        grant_code=code,
+    )
     results = await messagebus.handle(evt, uow)
     assert results, "You should request new authorization code!"
-    access_token = results[-1]
+    [access_token] = results
     return {"access_token": access_token}
+
+
+@oauth_router.get("/userinfo")
+async def api_get_user_info(userinfo: schemas.UserInfo = Depends(get_user_info)):
+    return userinfo

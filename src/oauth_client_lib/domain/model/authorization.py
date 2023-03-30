@@ -13,8 +13,7 @@ from datetime import datetime
 
 from .state import State
 from .grant import Grant
-from .access_token import Token
-from .user import User
+from .token import Token
 
 
 class Authorization:
@@ -23,16 +22,14 @@ class Authorization:
         state: State = State(),
         grants: List[Grant] = None,
         tokens: List[Token] = None,
-        user: User = None,
         is_active: bool = True,
         created=None,
-        provider: str = 'Own'
+        provider_name: str = "Own",
     ):
         self.state = state
-        self.provider = provider
+        self.provider = provider_name
         self.grants = grants if grants else []
         self.tokens = tokens if tokens else []
-        self.user = user if user else None
         self.is_active = is_active
         self.created = created if created else datetime.utcnow()
         self.events = []

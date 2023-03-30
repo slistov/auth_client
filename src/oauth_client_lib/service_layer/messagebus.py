@@ -13,26 +13,10 @@ from typing import Callable, Dict, List, Type, Union
 from ..domain import commands, events
 from . import handlers, unit_of_work
 
-from ..entrypoints import config
-from urllib.parse import urlencode
 
 logger = logging.getLogger(__name__)
 
 Message = Union[commands.Command, events.Event]
-
-
-async def get_oauth_uri(state_code):
-    client_id, _ = config.get_oauth_secrets(provider='google')
-    scopes, urls = config.get_oauth_params(provider='google')
-    redirect_uri = config.get_oauth_callback_URL()
-    params = {
-        "response_type": "code",
-        "client_id": client_id,
-        "redirect_uri": redirect_uri,
-        "scope": ' '.join(scopes),
-        "state": state_code
-    }
-    return f"{urls['code']}?{urlencode(params)}"
 
 
 async def handle(
@@ -93,7 +77,9 @@ async def handle_command(
 
 # events Dict
 EVENT_HANDLERS = {
-    events.AuthCodeRecieved: [handlers.auth_code_recieved, ],
+    events.AuthCodeRecieved: [
+        handlers.auth_code_recieved,
+    ],
 }  # type: Dict[Type[events.Event], List[Callable]]
 
 # commands Dict

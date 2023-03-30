@@ -17,21 +17,6 @@ from sqlalchemy.orm import registry, relationship
 
 mapper_registry = registry()
 
-users = Table(
-    'users', mapper_registry.metadata,
-    Column(
-        'id',
-        Integer,
-        primary_key=True,
-        autoincrement=True,
-        server_default=FetchedValue()
-    ),
-    Column('email', String),
-    Column('username', String),
-    Column('created', DateTime),
-    Column('is_active', Boolean)
-)
-
 authorizations = Table(
     'authorizations', mapper_registry.metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
@@ -74,7 +59,6 @@ tokens = Table(
 
 
 def start_mappers():
-    mapper_registry.map_imperatively(model.User, users)
     states_mapper = mapper_registry.map_imperatively(model.State, states)
     grants_mapper = mapper_registry.map_imperatively(model.Grant, grants)
     tokens_mapper = mapper_registry.map_imperatively(model.Token, tokens)
