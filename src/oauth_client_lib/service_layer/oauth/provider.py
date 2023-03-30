@@ -7,6 +7,7 @@ import json
 from ...entrypoints.config import get_oauth_callback_URL
 from ...service_layer import exceptions
 from ...entrypoints import config
+from . import schemas
 
 
 class OAuthProvider:
@@ -90,7 +91,7 @@ class OAuthProvider:
     async def get_email(self):
         return self._get_email()
 
-    async def get_user_info(self):
+    async def get_user_info(self) -> schemas.UserInfo:
         return await self._get_user_info()
 
     async def _get_email(self, token):

@@ -6,7 +6,7 @@ from ...service_layer import messagebus
 from ...service_layer.messagebus import commands, events
 from ...adapters import orm
 from ...service_layer.dependencies import get_uow, get_provider, get_user_info
-from .. import schemas
+from ...service_layer.oauth import schemas
 from typing import Annotated
 
 orm.start_mappers()
@@ -42,5 +42,5 @@ async def api_oauth_callback(state, code, uow=Depends(get_uow)):
 
 
 @oauth_router.get("/userinfo")
-async def api_get_user_info(userinfo: str = Depends(get_user_info)):
+async def api_get_user_info(userinfo: schemas.UserInfo = Depends(get_user_info)):
     return userinfo
