@@ -1,16 +1,18 @@
 from .provider import OAuthProvider
+from . import schemas
+
 import google.oauth2.credentials
 import google_auth_oauthlib.flow
-from ...entrypoints import config
+import google
+from googleapiclient.discovery import build
+from googleapiclient import errors
 
 
 class OAuthGoogleProvider(OAuthProvider):
-    async def __init__(
+    def __init__(
         self,
     ):
-        super().__init__(
-            "google",
-        )
+        super().__init__("google")
 
     async def _get_authorization_url(self, state_code):
         # Use the client_secret.json file to identify the application requesting
@@ -40,5 +42,19 @@ class OAuthGoogleProvider(OAuthProvider):
         return authorization_url
 
     async def _get_user_info(self):
-        # client = google.oauth2.
-        return await super()._get_user_info()
+        credentials = google.oauth2.credentials.Credentials(token=self.access_token)
+        user_info_service = build(
+            serviceName="oauth2", version="v2", credentials=credentials
+        )
+        user_info = None
+        try:
+            user_info = user_info_service.userinfo().get().execute()
+        except errors.HttpError as e:
+            # logging.error('An error occurred: %s', e)
+            assert 1 == 2, "Google API: couldn't request user info"
+
+        if user_info and user_info.get("id"):
+            return schemas.UserInfo(**user_info)
+        else:
+            raise Exception("No user id")
+        # return await super()._get_user_info()
