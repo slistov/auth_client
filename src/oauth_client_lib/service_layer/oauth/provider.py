@@ -8,6 +8,7 @@ from ...entrypoints.config import get_oauth_callback_URL
 from ...service_layer import exceptions
 from ...entrypoints import config
 from . import schemas
+from ...domain import model
 
 
 class OAuthProvider:
@@ -28,7 +29,7 @@ class OAuthProvider:
     async def get_authorization_url(self, state_code):
         return await self._get_authorization_url(state_code)
 
-    async def request_token(self, grant) -> aiohttp.ClientResponse.json:
+    async def request_token(self, grant: model.Grant) -> aiohttp.ClientResponse.json:
         data = await self._get_data_for_token_request(grant=grant)
         return await self._post(url=self._get_token_url(), data=data)
 
