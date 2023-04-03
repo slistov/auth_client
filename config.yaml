@@ -4,6 +4,15 @@
 oauth:
   callback: /api/oauth/callback
   providers:
+    google:
+      scopes: 
+      - https://www.googleapis.com/auth/userinfo.email
+      - openid
+      urls: 
+        code: # google_auth_oauthlib used, so urls must not be specified manually
+        token: # google_auth_oauthlib used, so urls must not be specified manually
+        userinfo: # google_auth_oauthlib used, so urls must not be specified manually
+        public_keys: # google_auth_oauthlib used, so urls must not be specified manually
     google-api:
       scopes: 
       - https://www.googleapis.com/auth/userinfo.email

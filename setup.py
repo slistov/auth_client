@@ -5,7 +5,7 @@ with open("README.md", encoding="utf8") as file:
 
 setup(
     name="oauth-client-lib",
-    version="0.1.38",
+    version="0.1.43",
     author="Sergey Listov",
     author_email="slistov@mail.ru",
     description="OAuth2 client library",
@@ -30,9 +30,11 @@ setup(
         "psycopg2==2.9.3",
         "python-dotenv==0.21.0",
         "aiohttp==3.8.3",
-        "aiofiles==21.1.0",
+        "aiofiles==23.1.0",
         "sqlalchemy_json",
         "python-jose",
+        "google-api-python-client==2.82.0",
+        "google_auth_oauthlib==1.0.0",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

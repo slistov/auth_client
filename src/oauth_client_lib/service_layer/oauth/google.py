@@ -19,7 +19,7 @@ class OAuthGoogleProvider(OAuthProvider):
         # authorization. The client ID (from that file) and access scopes are required.
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
             "client_secret_google.json",
-            scopes=self.scopes,
+            scopes=" ".join(self._get_scopes()),
         )
 
         # Indicate where the API server will redirect the user after the user completes
@@ -40,6 +40,15 @@ class OAuthGoogleProvider(OAuthProvider):
             state=state_code,
         )
         return authorization_url
+
+    async def request_token(self, grant):
+        flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
+            "client_secret_google.json",
+            scopes=" ".join(self._get_scopes()),
+        )
+        flow.redirect_uri = self._get_oauth_callback_URL()
+        token = flow.fetch_token(code=grant.code)
+        return token
 
     async def _get_user_info(self):
         credentials = google.oauth2.credentials.Credentials(token=self.access_token)
