@@ -34,6 +34,7 @@ setup(
         "sqlalchemy_json",
         "python-jose",
         "google-api-python-client==2.82.0",
+        "google_auth_oauthlib==1.0.0",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
