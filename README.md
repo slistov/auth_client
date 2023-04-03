@@ -1,39 +1,60 @@
 
-# OAuth2 client
+# OAuth2 client library
 
 Authenticate user with third-party OAuth2 provider for your Fastapi app
 
 ## Description
 
-The app gets token from oauth service according to oauth2.0 specs
+The library automates recieving of user email from oauth2 provider.
+Two steps:
 
-## How to use
+1. Redirect user to lib's endpoint and get **token** as a response.
+2. Use the token to call lib's endpoint to get user's **email**
+
+## Example
 
 ### 1. Get token
 
-On your frontend
->use links
+**Redirect user** to backend lib's endpoint
 
-- Google authentication
-`GET /api/oauth/authorize?provider=google`
-- Yandex authentication
-`GET /api/oauth/authorize?provider=yandex`
-- (any other, you can set it up)
-
->...and get token as response
-
-### 2. Get user's email
-
-On your frontend
->use token as authorization header
+Ex.:
 
 ```
-GET /api/oauth/userinfo
+    curl -X 'GET' \
+    'http://127.0.0.1:8000/api/oauth/redirect?provider=google' \
+    -H 'accept: application/json'
 ```
 
->...and get user's email as response
+...and get token as response
 
-### 3. That's it
+Ex.:
+
+```
+    {
+        "access_token": "TokenSomeStringValue"
+    }
+```
+
+### 2. Get user email
+
+**Call userinfo** endpoint
+
+Ex.:
+
+```
+    curl --location 'http://127.0.0.1:8000/api/oauth/userinfo' \
+    --header 'Authorization: Bearer TokenSomeStringValue'
+```
+
+...and get user's email as response
+
+Ex.:
+
+```
+    {
+        "email": "roadtoumba@gmail.com"
+    }
+```
 
 ## How to integrate into your fastapi app
 
@@ -57,6 +78,8 @@ Your fastapi app got new endpoints now:
 
 #### Add oauth2 providers' pics
 
+Ex.:
+
 ![Continue with...](docs/images/oauth_providers.png)
 
 #### Link providers' pics to router's endpoints
@@ -70,14 +93,30 @@ Your fastapi app got new endpoints now:
 
 There must be variables in your environment (use .env file, for example):
 
-OAUTH_DB_URI - postgres db connection for oauth purposes (grants, tokens, etc..)
+- OAUTH_DB_URI - postgres db connection for oauth purposes (grants, tokens, etc..)
+- API_HOST - you fastapi app host
 
 Ex.:
 
     OAUTH_DB_URI=postgresql://user:pwd123@localhost:5432/oauth
-
-API_HOST - you fastapi app host
-
-Ex.:
-
     API_HOST=http://192.168.0.100
+
+### config.yaml
+
+You can add custom oauth2 provider into oauth/providers:
+
+```
+oauth:
+    providers:
+        <provider_name>:
+            scopes:
+            - <scope1>
+            - <scope2>
+            - ...list of scopes enougth to request email
+            urls:
+                code: https://authorise-endpoint-that-returns-authorization-code
+                token: https://token-request-endpoint
+                userinfo: https://userinfo-endpoint
+```
+
+ Use *provider_name* as a query param while redirecting user on step 1 of example
